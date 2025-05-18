@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurant Booking and Order</title>
+</head>
+<body>
+  <h1>Welcome to Our Restaurant</h1>
+
+  <!-- Booking Section -->
+  <section>
+    <h2>Book a Table</h2>
+    <form action="/book-table" method="post">
+      <label for="name">Full Name:</label><br>
+      <input type="text" id="name" name="name" required><br><br>
+
+      <label for="phone">Phone Number:</label><br>
+      <input type="tel" id="phone" name="phone" required><br><br>
+
+      <label for="date">Date:</label><br>
+      <input type="date" id="date" name="date" required><br><br>
+
+      <label for="time">Time:</label><br>
+      <input type="time" id="time" name="time" required><br><br>
+
+      <label for="guests">Number of Guests:</label><br>
+      <input type="number" id="guests" name="guests" min="1" required><br><br>
+
+      <input type="submit" value="Book Now">
+    </form>
+  </section>
+
+  <hr>
+
+  <!-- Order Section -->
+  <section>
+    <h2>Place an Order</h2>
+    <form action="/place-order" method="post">
+      <label for="order-name">Full Name:</label><br>
+      <input type="text" id="order-name" name="orderName" required><br><br>
+
+      <label for="dish">Select Dish:</label><br>
+      <select id="dish" name="dish">
+        <option value="pizza">Pizza</option>
+        <option value="burger">Burger</option>
+        <option value="pasta">Pasta</option>
+        <option value="salad">Salad</option>
+      </select><br><br>
+
+      <label for="quantity">Quantity:</label><br>
+      <input type="number" id="quantity" name="quantity" min="1" required><br><br>
+
+      <input type="submit" value="Place Order">
+    </form>
+  </section>
+</body>
+</html>
