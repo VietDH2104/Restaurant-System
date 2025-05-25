@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const jwtConfig = require('../configs/jwtConfig');
+const jwtConfig = require('../configs/jwt.config');
 
 const protect = (req, res, next) => {
     let token;
