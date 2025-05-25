@@ -1,0 +1,98 @@
+const { pool } = require('../configs/db'); 
+
+const Product = {
+  async create(productData) {
+    const { title, img_url, category, price, description, status = 1 } = productData;
+    const sql = 'INSERT INTO products (title, img_url, category, price, description, status) VALUES (?, ?, ?, ?, ?, ?)';
+    const [result] = await pool.query(sql, [title, img_url, category, price, description, status]);
+    return { id: result.insertId, title, img_url, category, price, description, status };
+  },
+
+  async findById(id) {
+    const sql = 'SELECT * FROM products WHERE id = ?';
+    const [rows] = await pool.query(sql, [id]);
+    return rows[0]; 
+  },
+
+  async findAll(filters = {}) {
+    let baseSelectSql = 'SELECT * FROM products';
+    let countSelectSql = 'SELECT COUNT(*) as total FROM products';
+    let whereClauses = [];
+    const queryParams = [];
+
+    if (filters.forCustomerView) {
+        whereClauses.push('status = 1');
+    } else if (filters.status !== undefined && filters.status !== 'all' && filters.status !== 2 && filters.status !== '2') {
+       
+        whereClauses.push('status = ?');
+        queryParams.push(parseInt(filters.status));
+    }
+   
+    if (filters.category && filters.category !== 'Tất cả') {
+      whereClauses.push('category = ?');
+      queryParams.push(filters.category);
+    }
+
+    if (filters.search) {
+      whereClauses.push('title LIKE ?');
+      queryParams.push(`%${filters.search}%`);
+    }
+
+    if (filters.minPrice !== undefined) {
+      whereClauses.push('price >= ?');
+      queryParams.push(parseFloat(filters.minPrice));
+    }
+    if (filters.maxPrice !== undefined) {
+      whereClauses.push('price <= ?');
+      queryParams.push(parseFloat(filters.maxPrice));
+    }
+
+    const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+    baseSelectSql += ` ${whereCondition}`;
+    countSelectSql += ` ${whereCondition}`;
+
+    if (filters.sortBy) {
+        if (filters.sortBy === 'price_asc') baseSelectSql += ' ORDER BY price ASC';
+        else if (filters.sortBy === 'price_desc') baseSelectSql += ' ORDER BY price DESC';
+       
+    } else {
+        baseSelectSql += ' ORDER BY created_at DESC'; 
+    }
+
+    const [countRows] = await pool.query(countSelectSql, queryParams);
+    const total = countRows[0].total;
+
+    if (filters.limit) {
+        baseSelectSql += ' LIMIT ?';
+        queryParams.push(parseInt(filters.limit));
+        if (filters.offset !== undefined) {
+            baseSelectSql += ' OFFSET ?';
+            queryParams.push(parseInt(filters.offset));
+        }
+    }
+
+    const [products] = await pool.query(baseSelectSql, queryParams);
+    return { products, total };
+  },
+
+  async update(id, productData) {
+    const { title, img_url, category, price, description, status } = productData;
+    const sql = 'UPDATE products SET title = ?, img_url = ?, category = ?, price = ?, description = ?, status = ?, updated_at = NOW() WHERE id = ?';
+    const [result] = await pool.query(sql, [title, img_url, category, price, description, status, id]);
+    return result.affectedRows > 0;
+  },
+
+  async updateStatus(id, status) {
+    const sql = 'UPDATE products SET status = ?, updated_at = NOW() WHERE id = ?';
+    const [result] = await pool.query(sql, [status, id]);
+    return result.affectedRows > 0;
+  },
+
+  async countProducts() { 
+    const sql = 'SELECT COUNT(*) as count FROM products WHERE status = 1';
+    const [rows] = await pool.query(sql);
+    return rows[0].count;
+  }
+};
+
+module.exports = Product;
