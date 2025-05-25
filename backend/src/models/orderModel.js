@@ -1,4 +1,3 @@
-// ...existing code...
 const { pool } = require('../configs/db');
 
 const Order = {
