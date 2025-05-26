@@ -1,911 +1,1014 @@
-function checkLogin() {
-    let currentUser = JSON.parse(localStorage.getItem("currentuser"));
-    if(currentUser == null || currentUser.userType == 0) {
-        document.querySelector("body").innerHTML = `<div class="access-denied-section">
-            <img class="access-denied-img" src="./assets/img/access-denied.webp" alt="">
-        </div>`
+async function checkLogin() {
+    const currentUser = ApiService.getCurrentUser();
+    if(currentUser == null || currentUser.userType !== 1) {
+        document.querySelector("body").innerHTML = `<div class="access-denied-section" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center;">
+            <img class="access-denied-img" src="./assets/img/access-denied.webp" alt="" style="max-width: 300px; margin-bottom: 20px;">
+             <p style="font-size:1.2rem;">Bạn không có quyền truy cập trang này. <a href="/">Về trang chủ</a></p>
+        </div>`;
+        return false;
     } else {
         document.getElementById("name-acc").innerHTML = currentUser.fullname;
+        return true;
     }
 }
-window.onload = checkLogin();
 
-//do sidebar open and close
 const menuIconButton = document.querySelector(".menu-icon-btn");
 const sidebar = document.querySelector(".sidebar");
-menuIconButton.addEventListener("click", () => {
-    sidebar.classList.toggle("open");
-});
+if (menuIconButton && sidebar) {
+    menuIconButton.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+    });
+}
 
-// log out admin user
-/*
-let toogleMenu = document.querySelector(".profile");
-let mune = document.querySelector(".profile-cropdown");
-toogleMenu.onclick = function () {
-    mune.classList.toggle("active");
-};
-*/
-
-// tab for section
 const sidebars = document.querySelectorAll(".sidebar-list-item.tab-content");
 const sections = document.querySelectorAll(".section");
 
 for(let i = 0; i < sidebars.length; i++) {
     sidebars[i].onclick = function () {
-        document.querySelector(".sidebar-list-item.active").classList.remove("active");
-        document.querySelector(".section.active").classList.remove("active");
+        const currentActiveSidebar = document.querySelector(".sidebar-list-item.active");
+        if(currentActiveSidebar) currentActiveSidebar.classList.remove("active");
+
+        const currentActiveSection = document.querySelector(".section.active");
+        if(currentActiveSection) currentActiveSection.classList.remove("active");
+
         sidebars[i].classList.add("active");
         sections[i].classList.add("active");
+
+        if (window.innerWidth < 768 && sidebar && sidebar.classList.contains("open")) {
+        }
     };
 }
 
-const closeBtn = document.querySelectorAll('.section');
-console.log(closeBtn[0])
-for(let i=0;i<closeBtn.length;i++){
-    closeBtn[i].addEventListener('click',(e) => {
-        sidebar.classList.add("open");
-    })
-}
-
-// Get amount product
-function getAmoumtProduct() {
-    let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
-    return products.length;
-}
-
-// Get amount user
-function getAmoumtUser() {
-    let accounts = localStorage.getItem("accounts") ? JSON.parse(localStorage.getItem("accounts")) : [];
-    return accounts.filter(item => item.userType == 0).length;
-}
-
-// Get amount user
-function getMoney() {
-    let tongtien = 0;
-    let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
-    orders.forEach(item => {
-        tongtien += item.tongtien
+const contentContainer = document.querySelector('.content');
+if (sidebar && contentContainer) {
+    contentContainer.addEventListener('click', (e) => {
+        if (window.innerWidth < 1024 && sidebar.classList.contains('open')) {
+            if (menuIconButton && !menuIconButton.contains(e.target)) {
+            }
+        }
     });
-    return tongtien;
 }
 
-document.getElementById("amount-user").innerHTML = getAmoumtUser();
-document.getElementById("amount-product").innerHTML = getAmoumtProduct();
-document.getElementById("doanh-thu").innerHTML = vnd(getMoney());
-
-// Doi sang dinh dang tien VND
-function vnd(price) {
-    return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-}
-// Phân trang 
-let perPage = 12;
-let currentPage = 1;
-let totalPage = 0;
-let perProducts = [];
-
-function displayList(productAll, perPage, currentPage) {
-    let start = (currentPage - 1) * perPage;
-    let end = (currentPage - 1) * perPage + perPage;
-    let productShow = productAll.slice(start, end);
-    showProductArr(productShow);
-}
-
-function setupPagination(productAll, perPage) {
-    document.querySelector('.page-nav-list').innerHTML = '';
-    let page_count = Math.ceil(productAll.length / perPage);
-    for (let i = 1; i <= page_count; i++) {
-        let li = paginationChange(i, productAll, currentPage);
-        document.querySelector('.page-nav-list').appendChild(li);
+async function loadDashboardStats() {
+    try {
+        const stats = await ApiService.fetchAdminStats();
+        document.getElementById("amount-user").innerHTML = stats.totalCustomers || 0;
+        document.getElementById("amount-product").innerHTML = stats.totalProducts || 0;
+        document.getElementById("doanh-thu").innerHTML = vnd(stats.totalRevenue || 0);
+    } catch (error) {
+        console.error("Error loading dashboard stats:", error);
+        toast({ title: "Lỗi", message: "Không thể tải dữ liệu tổng quan.", type: "error" });
     }
 }
 
-function paginationChange(page, productAll, currentPage) {
-    let node = document.createElement(`li`);
-    node.classList.add('page-nav-item');
-    node.innerHTML = `<a href="#">${page}</a>`;
-    if (currentPage == page) node.classList.add('active');
-    node.addEventListener('click', function () {
-        currentPage = page;
-        displayList(productAll, perPage, currentPage);
-        let t = document.querySelectorAll('.page-nav-item.active');
-        for (let i = 0; i < t.length; i++) {
-            t[i].classList.remove('active');
-        }
-        node.classList.add('active');
-    })
-    return node;
+function vnd(price) {
+    if (typeof price !== 'number') {
+        price = parseFloat(price) || 0;
+    }
+    return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 }
 
-// Hiển thị danh sách sản phẩm 
-function showProductArr(arr) {
+let adminCurrentPage = 1;
+let adminPerPage = 10;
+
+function setupAdminPagination(totalItems, perPage, activePage, sectionType, currentFilters = {}) {
+    let pageNavList;
+    if (sectionType === 'product') {
+        pageNavList = document.querySelector(".product-all .page-nav-list");
+    } else if (sectionType === 'user') {
+        const userSection = sections[2];
+        if (userSection) pageNavList = userSection.querySelector(".page-nav-list");
+    } else if (sectionType === 'order') {
+        const orderSection = sections[3];
+         if (orderSection) pageNavList = orderSection.querySelector(".page-nav-list");
+    } else if (sectionType === 'stats') {
+        const statsSection = sections[4];
+        if (statsSection) pageNavList = statsSection.querySelector(".page-nav-list");
+    }
+
+    if (!pageNavList) {
+        if (sectionType !== 'user' && sectionType !== 'dashboard') {
+            console.warn("Pagination list element not found for section:", sectionType);
+        }
+        return;
+    }
+    pageNavList.innerHTML = '';
+    const page_count = Math.ceil(totalItems / perPage);
+
+    for (let i = 1; i <= page_count; i++) {
+        let node = document.createElement(`li`);
+        node.classList.add('page-nav-item');
+        node.innerHTML = `<a href="javascript:;">${i}</a>`;
+        if (activePage === i) node.classList.add('active');
+
+        node.addEventListener('click', async function () {
+            adminCurrentPage = i;
+            const newFilters = { ...currentFilters, page: adminCurrentPage };
+
+            if (sectionType === 'product') {
+                await showProduct(newFilters);
+            } else if (sectionType === 'user') {
+                await showUser(newFilters);
+            } else if (sectionType === 'order') {
+                await findOrder(newFilters);
+            } else if (sectionType === 'stats') {
+                 const currentSortMode = getCurrentSortModeForStats();
+                 await thongKe(currentSortMode, newFilters);
+            }
+
+            const currentActivePagItem = pageNavList.querySelector('.page-nav-item.active');
+            if(currentActivePagItem) currentActivePagItem.classList.remove('active');
+            node.classList.add('active');
+        });
+        pageNavList.appendChild(node);
+    }
+}
+function getCurrentSortModeForStats() {
+    return 0;
+}
+
+async function showProductArr(arr) {
     let productHtml = "";
-    if(arr.length == 0) {
-        productHtml = `<div class="no-result"><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h">Không có sản phẩm để hiển thị</div></div>`;
+    const productShowElement = document.getElementById("show-product");
+    if (!productShowElement) return;
+
+    if(!arr || arr.length == 0) {
+        productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
     } else {
         arr.forEach(product => {
-            let btnCtl = product.status == 1 ? 
-            `<button class="btn-delete" onclick="deleteProduct(${product.id})"><i class="fa-regular fa-trash"></i></button>` :
-            `<button class="btn-delete" onclick="changeStatusProduct(${product.id})"><i class="fa-regular fa-eye"></i></button>`;
+            let btnCtl = product.status == 1 ?
+            `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>` :
+            `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
             productHtml += `
             <div class="list">
-                    <div class="list-left">
-                    <img src="${product.img}" alt="">
+                <div class="list-left">
+                    <img src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title}">
                     <div class="list-info">
                         <h4>${product.title}</h4>
-                        <p class="list-note">${product.desc}</p>
+                        <p class="list-note">${product.description || ''}</p>
                         <span class="list-category">${product.category}</span>
                     </div>
                 </div>
                 <div class="list-right">
                     <div class="list-price">
-                    <span class="list-current-price">${vnd(product.price)}</span>                   
+                    <span class="list-current-price">${vnd(product.price)}</span>
                     </div>
                     <div class="list-control">
                     <div class="list-tool">
                         <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
                         ${btnCtl}
-                    </div>                       
+                    </div>
                 </div>
-                </div> 
+                </div>
             </div>`;
         });
     }
-    document.getElementById("show-product").innerHTML = productHtml;
+    productShowElement.innerHTML = productHtml;
 }
 
-function showProduct() {
+async function showProduct(externalFilters = {}) {
     let selectOp = document.getElementById('the-loai').value;
     let valeSearchInput = document.getElementById('form-search-product').value;
-    let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
 
-    if(selectOp == "Tất cả") {
-        result = products.filter((item) => item.status == 1);
-    } else if(selectOp == "Đã xóa") {
-        result = products.filter((item) => item.status == 0);
-    } else {
-        result = products.filter((item) => item.category == selectOp);
+    const params = {
+        page: adminCurrentPage,
+        limit: adminPerPage,
+        ...externalFilters
+    };
+
+    if (selectOp && selectOp !== "Tất cả" && selectOp !== "Đã xóa") {
+        params.category = selectOp;
     }
+    if (valeSearchInput) {
+        params.search = valeSearchInput;
+    }
+    if (selectOp === "Đã xóa") {
+        params.status = 0;
+    } else if (selectOp !== "Tất cả" && selectOp !== "Đã xóa"){ // Specific category implies active unless "Đã xóa"
+        params.status = 1;
+    } // If "Tất cả", no status filter is sent, backend shows all.
 
-    result = valeSearchInput == "" ? result : result.filter(item => {
-        return item.title.toString().toUpperCase().includes(valeSearchInput.toString().toUpperCase());
-    })
-
-    displayList(result, perPage, currentPage);
-    setupPagination(result, perPage, currentPage);
+    try {
+        const response = await ApiService.fetchAdminProducts(params);
+        showProductArr(response.data);
+        setupAdminPagination(response.pagination.totalItems, adminPerPage, response.pagination.currentPage, 'product', params);
+    } catch (error) {
+        console.error("Error fetching admin products:", error);
+        toast({ title: "Lỗi", message: "Không thể tải danh sách sản phẩm.", type: "error" });
+        const productShowElement = document.getElementById("show-product");
+        if (productShowElement) productShowElement.innerHTML = `<p style="text-align:center;">Lỗi tải sản phẩm.</p>`;
+    }
 }
 
-function cancelSearchProduct() {
-    let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")).filter(item => item.status == 1) : [];
+async function cancelSearchProduct() {
     document.getElementById('the-loai').value = "Tất cả";
     document.getElementById('form-search-product').value = "";
-    displayList(products, perPage, currentPage);
-    setupPagination(products, perPage, currentPage);
+    adminCurrentPage = 1;
+    await showProduct();
 }
 
-window.onload = showProduct();
-
-function createId(arr) {
-    let id = arr.length;
-    let check = arr.find((item) => item.id == id);
-    while (check != null) {
-        id++;
-        check = arr.find((item) => item.id == id);
+async function updateProductStatus(productId, newStatus, element) {
+    const actionText = newStatus === 0 ? "xóa (ẩn)" : "khôi phục";
+    const confirmAction = confirm(`Bạn có chắc muốn ${actionText} sản phẩm này?`);
+    if (confirmAction) {
+        try {
+            await ApiService.updateProductStatus(productId, newStatus);
+            toast({ title: 'Thành công', message: `Sản phẩm đã được ${actionText}.`, type: 'success' });
+            await showProduct({page: adminCurrentPage});
+        } catch (error) {
+            console.error(`Error ${actionText} product:`, error);
+            toast({ title: 'Lỗi', message: `Không thể ${actionText} sản phẩm.`, type: 'error' });
+        }
     }
-    return id;
 }
-// Xóa sản phẩm 
-function deleteProduct(id) {
-    let products = JSON.parse(localStorage.getItem("products"));
-    let index = products.findIndex(item => {
-        return item.id == id;
-    })
-    if (confirm("Bạn có chắc muốn xóa?") == true) {
-        products[index].status = 0;
-        toast({ title: 'Success', message: 'Xóa sản phẩm thành công !', type: 'success', duration: 3000 });
+
+var currentEditingProductId = null;
+async function editProduct(id) {
+    try {
+        const product = await ApiService.fetchProductById(id);
+        if (!product) {
+            toast({ title: "Lỗi", message: "Không tìm thấy sản phẩm.", type: "error"});
+            return;
+        }
+        currentEditingProductId = product.id;
+
+        document.querySelectorAll(".add-product-e").forEach(item => item.style.display = "none");
+        document.querySelectorAll(".edit-product-e").forEach(item => item.style.display = "block");
+        document.querySelector(".modal.add-product").classList.add("open");
+
+        document.querySelector(".modal.add-product .upload-image-preview").src = product.img_url || './assets/img/blank-image.png';
+        document.querySelector(".modal.add-product #ten-mon").value = product.title;
+        document.querySelector(".modal.add-product #gia-moi").value = product.price;
+        document.querySelector(".modal.add-product #mo-ta").value = product.description || '';
+        document.querySelector(".modal.add-product #chon-mon").value = product.category;
+        document.querySelector(".modal.add-product .upload-image-preview").dataset.originalUrl = product.img_url || '';
+        uploadedFile = null;
+
+    } catch (error) {
+        console.error("Error fetching product for edit:", error);
+        toast({ title: "Lỗi", message: "Không thể tải thông tin sản phẩm để sửa.", type: "error" });
     }
-    localStorage.setItem("products", JSON.stringify(products));
-    showProduct();
 }
 
-function changeStatusProduct(id) {
-    let products = JSON.parse(localStorage.getItem("products"));
-    let index = products.findIndex(item => {
-        return item.id == id;
-    })
-    if (confirm("Bạn có chắc chắn muốn hủy xóa?") == true) {
-        products[index].status = 1;
-        toast({ title: 'Success', message: 'Khôi phục sản phẩm thành công !', type: 'success', duration: 3000 });
+let uploadedFile = null;
+function uploadImage(el) {
+    if (el.files && el.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const previewImage = document.querySelector(".modal.add-product .upload-image-preview");
+            if (previewImage) {
+                previewImage.setAttribute("src", e.target.result);
+            }
+        }
+        reader.readAsDataURL(el.files[0]);
+        uploadedFile = el.files[0];
+    } else {
+        uploadedFile = null;
+        const previewImage = document.querySelector(".modal.add-product .upload-image-preview");
+        if (previewImage) {
+            const originalUrl = previewImage.dataset.originalUrl;
+            if (originalUrl) {
+                previewImage.setAttribute("src", originalUrl);
+            } else {
+                previewImage.setAttribute("src", './assets/img/blank-image.png');
+            }
+        }
     }
-    localStorage.setItem("products", JSON.stringify(products));
-    showProduct();
-}
-
-var indexCur;
-function editProduct(id) {
-    let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
-    let index = products.findIndex(item => {
-        return item.id == id;
-    })
-    indexCur = index;
-    document.querySelectorAll(".add-product-e").forEach(item => {
-        item.style.display = "none";
-    })
-    document.querySelectorAll(".edit-product-e").forEach(item => {
-        item.style.display = "block";
-    })
-    document.querySelector(".add-product").classList.add("open");
-    //
-    document.querySelector(".upload-image-preview").src = products[index].img;
-    document.getElementById("ten-mon").value = products[index].title;
-    document.getElementById("gia-moi").value = products[index].price;
-    document.getElementById("mo-ta").value = products[index].desc;
-    document.getElementById("chon-mon").value = products[index].category;
-}
-
-function getPathImage(path) {
-    let patharr = path.split("/");
-    return "./assets/img/products/" + patharr[patharr.length - 1];
 }
 
 let btnUpdateProductIn = document.getElementById("update-product-button");
-btnUpdateProductIn.addEventListener("click", (e) => {
+btnUpdateProductIn.addEventListener("click", async (e) => {
     e.preventDefault();
-    let products = JSON.parse(localStorage.getItem("products"));
-    let idProduct = products[indexCur].id;
-    let imgProduct = products[indexCur].img;
-    let titleProduct = products[indexCur].title;
-    let curProduct = products[indexCur].price;
-    let descProduct = products[indexCur].desc;
-    let categoryProduct = products[indexCur].category;
-    let imgProductCur = getPathImage(document.querySelector(".upload-image-preview").src)
-    let titleProductCur = document.getElementById("ten-mon").value;
-    let curProductCur = document.getElementById("gia-moi").value;
-    let descProductCur = document.getElementById("mo-ta").value;
-    let categoryText = document.getElementById("chon-mon").value;
+    if (!currentEditingProductId) {
+        toast({ title: "Lỗi", message: "Không có sản phẩm nào đang được chọn để sửa.", type: "warning" });
+        return;
+    }
+    const title = document.querySelector(".modal.add-product #ten-mon").value;
+    const price = document.querySelector(".modal.add-product #gia-moi").value;
+    const description = document.querySelector(".modal.add-product #mo-ta").value;
+    const category = document.querySelector(".modal.add-product #chon-mon").value;
 
-    if (imgProductCur != imgProduct || titleProductCur != titleProduct || curProductCur != curProduct || descProductCur != descProduct || categoryText != categoryProduct) {
-        let productadd = {
-            id: idProduct,
-            title: titleProductCur,
-            img: imgProductCur,
-            category: categoryText,
-            price: parseInt(curProductCur),
-            desc: descProductCur,
-            status: 1,
-        };
-        products.splice(indexCur, 1);
-        products.splice(indexCur, 0, productadd);
-        localStorage.setItem("products", JSON.stringify(products));
-        toast({ title: "Success", message: "Sửa sản phẩm thành công!", type: "success", duration: 3000, });
-        setDefaultValue();
-        document.querySelector(".add-product").classList.remove("open");
-        showProduct();
-    } else {
-        toast({ title: "Warning", message: "Sản phẩm của bạn không thay đổi!", type: "warning", duration: 3000, });
+    if (!title || !price || !category) {
+        toast({ title: "Chú ý", message: "Tên món, giá và loại món là bắt buộc!", type: "warning" });
+        return;
+    }
+    if (isNaN(parseFloat(price))) {
+        toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('price', parseFloat(price));
+    formData.append('description', description);
+    formData.append('category', category);
+
+    if (uploadedFile) {
+        formData.append('imageFile', uploadedFile);
+    }
+
+    try {
+        await ApiService.updateProduct(currentEditingProductId, formData);
+        toast({ title: "Success", message: "Sửa sản phẩm thành công!", type: "success" });
+        setDefaultProductFormValue();
+        document.querySelector(".modal.add-product").classList.remove("open");
+        await showProduct({page: adminCurrentPage});
+    } catch (error) {
+        console.error("Error updating product:", error);
+        toast({ title: "Lỗi", message: error.data?.message || "Sửa sản phẩm thất bại.", type: "error" });
     }
 });
 
 let btnAddProductIn = document.getElementById("add-product-button");
-btnAddProductIn.addEventListener("click", (e) => {
+btnAddProductIn.addEventListener("click", async (e) => {
     e.preventDefault();
-    let imgProduct = getPathImage(document.querySelector(".upload-image-preview").src)
-    let tenMon = document.getElementById("ten-mon").value;
-    let price = document.getElementById("gia-moi").value;
-    let moTa = document.getElementById("mo-ta").value;
-    let categoryText = document.getElementById("chon-mon").value;
-    if(tenMon == "" || price == "" || moTa == "") {
-        toast({ title: "Chú ý", message: "Vui lòng nhập đầy đủ thông tin món!", type: "warning", duration: 3000, });
-    } else {
-        if(isNaN(price)) {
-            toast({ title: "Chú ý", message: "Giá phải ở dạng số!", type: "warning", duration: 3000, });
-        } else {
-            let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
-            let product = {
-                id: createId(products),
-                title: tenMon,
-                img: imgProduct,
-                category: categoryText,
-                price: price,
-                desc: moTa,
-                status:1
-            };
-            products.unshift(product);
-            localStorage.setItem("products", JSON.stringify(products));
-            showProduct();
-            document.querySelector(".add-product").classList.remove("open");
-            toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success", duration: 3000});
-            setDefaultValue();
-        }
+
+    const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+    const price = document.querySelector(".modal.add-product #gia-moi").value;
+    const moTa = document.querySelector(".modal.add-product #mo-ta").value;
+    const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+
+    if(tenMon == "" || price == "" || categoryText == "") {
+        toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
+        return;
+    }
+    if(isNaN(parseFloat(price))) {
+        toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', tenMon);
+    formData.append('price', parseFloat(price));
+    formData.append('description', moTa);
+    formData.append('category', categoryText);
+    formData.append('status', 1);
+
+    if (uploadedFile) {
+        formData.append('imageFile', uploadedFile);
+    }
+
+    try {
+        await ApiService.createProduct(formData);
+        toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
+        setDefaultProductFormValue();
+        document.querySelector(".modal.add-product").classList.remove("open");
+        adminCurrentPage = 1;
+        await showProduct();
+    } catch (error) {
+        console.error("Error adding product:", error);
+        toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
     }
 });
 
-document.querySelector(".modal-close.product-form").addEventListener("click",() => {
-    setDefaultValue();
-})
-
-function setDefaultValue() {
-    document.querySelector(".upload-image-preview").src = "./assets/img/blank-image.png";
-    document.getElementById("ten-mon").value = "";
-    document.getElementById("gia-moi").value = "";
-    document.getElementById("mo-ta").value = "";
-    document.getElementById("chon-mon").value = "Món chay";
+const productModalCloseButton = document.querySelector(".modal.add-product .modal-close.product-form");
+if (productModalCloseButton) {
+    productModalCloseButton.addEventListener("click",() => {
+        setDefaultProductFormValue();
+        document.querySelector(".modal.add-product").classList.remove("open");
+    });
 }
 
-// Open Popup Modal
+function setDefaultProductFormValue() {
+    const productModal = document.querySelector(".modal.add-product");
+    if (!productModal) return;
+
+    const previewImg = productModal.querySelector(".upload-image-preview");
+    if(previewImg) {
+        previewImg.src = "./assets/img/blank-image.png";
+        previewImg.removeAttribute('data-original-url');
+    }
+    const tenMonInput = productModal.querySelector("#ten-mon");
+    if(tenMonInput) tenMonInput.value = "";
+
+    const giaMoiInput = productModal.querySelector("#gia-moi");
+    if(giaMoiInput) giaMoiInput.value = "";
+
+    const moTaInput = productModal.querySelector("#mo-ta");
+    if(moTaInput) moTaInput.value = "";
+
+    const chonMonSelect = productModal.querySelector("#chon-mon");
+    if(chonMonSelect) chonMonSelect.value = "Món chay";
+
+    const fileInput = productModal.querySelector("#up-hinh-anh");
+    if(fileInput) fileInput.value = null;
+
+    uploadedFile = null;
+    currentEditingProductId = null;
+}
+
 let btnAddProduct = document.getElementById("btn-add-product");
 btnAddProduct.addEventListener("click", () => {
-    document.querySelectorAll(".add-product-e").forEach(item => {
-        item.style.display = "block";
-    })
-    document.querySelectorAll(".edit-product-e").forEach(item => {
-        item.style.display = "none";
-    })
-    document.querySelector(".add-product").classList.add("open");
+    setDefaultProductFormValue();
+    document.querySelectorAll(".add-product-e").forEach(item => item.style.display = "block");
+    document.querySelectorAll(".edit-product-e").forEach(item => item.style.display = "none");
+    document.querySelector(".modal.add-product").classList.add("open");
 });
 
-// Close Popup Modal
-let closePopup = document.querySelectorAll(".modal-close");
-let modalPopup = document.querySelectorAll(".modal");
-
-for (let i = 0; i < closePopup.length; i++) {
-    closePopup[i].onclick = () => {
-        modalPopup[i].classList.remove("open");
+let closePopupButtons = document.querySelectorAll(".modal .modal-close");
+closePopupButtons.forEach(button => {
+    button.onclick = () => {
+        const modalToClose = button.closest(".modal");
+        if (modalToClose) {
+            modalToClose.classList.remove("open");
+            if (modalToClose.classList.contains('add-product')) {
+                setDefaultProductFormValue();
+            }
+            if (modalToClose.classList.contains('signup')) {
+                signUpFormReset();
+            }
+             if (modalToClose.classList.contains('detail-order-product')) {
+                const tableBody = modalToClose.querySelector("#show-product-order-detail");
+                if (tableBody) tableBody.innerHTML = "";
+            }
+        }
     };
+});
+
+async function changeOrderStatusInDetail(orderId, newStatus, el) {
+    try {
+        await ApiService.updateOrderStatus(orderId, newStatus);
+        toast({ title: "Thành công", message: "Cập nhật trạng thái đơn hàng thành công.", type: "success" });
+        if (el) {
+            const willBeProcessed = newStatus === 1;
+            el.textContent = willBeProcessed ? "Hủy xử lý" : "Xử lý đơn";
+            el.classList.remove(willBeProcessed ? "btn-chuaxuly" : "btn-daxuly");
+            el.classList.add(willBeProcessed ? "btn-daxuly" : "btn-chuaxuly");
+            el.onclick = () => changeOrderStatusInDetail(orderId, willBeProcessed ? 0 : 1, el);
+        }
+        await findOrder({page: adminCurrentPage});
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        toast({ title: "Lỗi", message: "Cập nhật trạng thái thất bại.", type: "error" });
+    }
 }
 
-// On change Image
-function uploadImage(el) {
-    let path = "./assets/img/products/" + el.value.split("\\")[2];
-    document.querySelector(".upload-image-preview").setAttribute("src", path);
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    let dd = date.getDate();
+    let mm = date.getMonth() + 1;
+    const yyyy = date.getFullYear();
+    if (dd < 10) dd = '0' + dd;
+    if (mm < 10) mm = '0' + mm;
+    return dd + '/' + mm + '/' + yyyy;
 }
 
-// Đổi trạng thái đơn hàng
-function changeStatus(id, el) {
-    let orders = JSON.parse(localStorage.getItem("order"));
-    let order = orders.find((item) => {
-        return item.id == id;
-    });
-    order.trangthai = 1;
-    el.classList.remove("btn-chuaxuly");
-    el.classList.add("btn-daxuly");
-    el.innerHTML = "Đã xử lý";
-    localStorage.setItem("order", JSON.stringify(orders));
-    findOrder(orders);
-}
-
-// Format Date
-function formatDate(date) {
-    let fm = new Date(date);
-    let yyyy = fm.getFullYear();
-    let mm = fm.getMonth() + 1;
-    let dd = fm.getDate();
-    if (dd < 10) dd = "0" + dd;
-    if (mm < 10) mm = "0" + mm;
-    return dd + "/" + mm + "/" + yyyy;
-}
-
-// Show order
-function showOrder(arr) {
+async function showOrder(ordersArray) {
     let orderHtml = "";
-    if(arr.length == 0) {
-        orderHtml = `<td colspan="6">Không có dữ liệu</td>`
+    const showOrderElement = document.getElementById("showOrder");
+    if (!showOrderElement) return;
+
+    if(!ordersArray || ordersArray.length == 0) {
+        orderHtml = `<tr><td colspan="6" style="text-align:center;">Không có đơn hàng nào.</td></tr>`;
     } else {
-        arr.forEach((item) => {
-            let status = item.trangthai == 0 ? `<span class="status-no-complete">Chưa xử lý</span>` : `<span class="status-complete">Đã xử lý</span>`;
-            let date = formatDate(item.thoigiandat);
+        ordersArray.forEach((item) => {
+            let statusText = item.status == 0 ? `<span class="status-no-complete">Chưa xử lý</span>` : `<span class="status-complete">Đã xử lý</span>`;
+            let date = formatDate(item.order_timestamp);
             orderHtml += `
             <tr>
             <td>${item.id}</td>
-            <td>${item.khachhang}</td>
+            <td>${item.customer_name} (${item.customer_phone})</td>
             <td>${date}</td>
-            <td>${vnd(item.tongtien)}</td>                               
-            <td>${status}</td>
+            <td>${vnd(item.total_amount)}</td>
+            <td>${statusText}</td>
             <td class="control">
-            <button class="btn-detail" id="" onclick="detailOrder('${item.id}')"><i class="fa-regular fa-eye"></i> Chi tiết</button>
+            <button class="btn-detail" onclick="detailOrderAdmin('${item.id}')"><i class="fa-regular fa-eye"></i> Chi tiết</button>
             </td>
-            </tr>      
+            </tr>
             `;
         });
     }
-    document.getElementById("showOrder").innerHTML = orderHtml;
+    showOrderElement.innerHTML = orderHtml;
 }
 
-let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
-window.onload = showOrder(orders);
-
-// Get Order Details
-function getOrderDetails(madon) {
-    let orderDetails = localStorage.getItem("orderDetails") ?
-        JSON.parse(localStorage.getItem("orderDetails")) : [];
-    let ctDon = [];
-    orderDetails.forEach((item) => {
-        if (item.madon == madon) {
-            ctDon.push(item);
+async function detailOrderAdmin(orderId) {
+    try {
+        const order = await ApiService.fetchOrderById(orderId);
+        if (!order) {
+            toast({ title: "Lỗi", message: "Không tìm thấy đơn hàng.", type: "error" });
+            return;
         }
-    });
-    return ctDon;
-}
+        const detailOrderModal = document.querySelector(".modal.detail-order");
+        if (!detailOrderModal) return;
+        detailOrderModal.classList.add("open");
 
-// Show Order Detail
-function detailOrder(id) {
-    document.querySelector(".modal.detail-order").classList.add("open");
-    let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
-    let products = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("products")) : [];
-    // Lấy hóa đơn 
-    let order = orders.find((item) => item.id == id);
-    // Lấy chi tiết hóa đơn
-    let ctDon = getOrderDetails(id);
-    let spHtml = `<div class="modal-detail-left"><div class="order-item-group">`;
+        let spHtml = `<div class="modal-detail-left"><div class="order-item-group">`;
 
-    ctDon.forEach((item) => {
-        let detaiSP = products.find(product => product.id == item.id);
-        spHtml += `<div class="order-product">
-            <div class="order-product-left">
-                <img src="${detaiSP.img}" alt="">
-                <div class="order-product-info">
-                    <h4>${detaiSP.title}</h4>
-                    <p class="order-product-note"><i class="fa-light fa-pen"></i> ${item.note}</p>
-                    <p class="order-product-quantity">SL: ${item.soluong}<p>
+        if (order.items && order.items.length > 0) {
+            order.items.forEach((item) => {
+                spHtml += `<div class="order-product">
+                    <div class="order-product-left">
+                        <img src="${item.product_img_url || './assets/img/blank-image.png'}" alt="${item.product_title}">
+                        <div class="order-product-info">
+                            <h4>${item.product_title}</h4>
+                            <p class="order-product-note"><i class="fa-light fa-pen"></i> ${item.item_notes || 'Không có ghi chú'}</p>
+                            <p class="order-product-quantity">SL: ${item.quantity}<p>
+                        </div>
+                    </div>
+                    <div class="order-product-right">
+                        <div class="order-product-price">
+                            <span class="order-product-current-price">${vnd(item.price_at_purchase)}</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        } else {
+            spHtml += `<p>Đơn hàng không có sản phẩm chi tiết.</p>`;
+        }
+        spHtml += `</div></div>`;
+
+        let deliveryDateInfo = order.delivery_time_slot ? `${order.delivery_time_slot} - ${formatDate(order.delivery_date)}` : formatDate(order.delivery_date);
+        if (order.delivery_type && order.delivery_type.toLowerCase().includes('giao ngay')) {
+             deliveryDateInfo = `Giao ngay - ${formatDate(order.delivery_date)}`;
+        }
+
+        spHtml += `<div class="modal-detail-right">
+            <ul class="detail-order-group">
+                 <li class="detail-order-item">
+                    <span class="detail-order-item-left"><i class="fa-light fa-hashtag"></i> Mã đơn hàng</span>
+                    <span class="detail-order-item-right">${order.id}</span>
+                </li>
+                <li class="detail-order-item">
+                    <span class="detail-order-item-left"><i class="fa-light fa-calendar-days"></i> Ngày đặt hàng</span>
+                    <span class="detail-order-item-right">${formatDate(order.order_timestamp)}</span>
+                </li>
+                <li class="detail-order-item">
+                    <span class="detail-order-item-left"><i class="fa-light fa-truck"></i> Hình thức giao</span>
+                    <span class="detail-order-item-right">${order.delivery_type}</span>
+                </li>
+                <li class="detail-order-item">
+                <span class="detail-order-item-left"><i class="fa-thin fa-person"></i> Người nhận</span>
+                <span class="detail-order-item-right">${order.customer_name}</span>
+                </li>
+                <li class="detail-order-item">
+                <span class="detail-order-item-left"><i class="fa-light fa-phone"></i> Số điện thoại</span>
+                <span class="detail-order-item-right">${order.customer_phone}</span>
+                </li>
+                <li class="detail-order-item tb">
+                    <span class="detail-order-item-left"><i class="fa-light fa-clock"></i> Thời gian giao</span>
+                    <p class="detail-order-item-b">${deliveryDateInfo}</p>
+                </li>
+                <li class="detail-order-item tb">
+                    <span class="detail-order-item-t"><i class="fa-light fa-location-dot"></i> Địa chỉ nhận</span>
+                    <p class="detail-order-item-b">${order.delivery_address}</p>
+                </li>
+                <li class="detail-order-item tb">
+                    <span class="detail-order-item-t"><i class="fa-light fa-note-sticky"></i> Ghi chú</span>
+                    <p class="detail-order-item-b">${order.notes || 'Không có ghi chú'}</p>
+                </li>
+            </ul>
+        </div>`;
+        const modalDetailOrderContent = detailOrderModal.querySelector(".modal-detail-order");
+        if (modalDetailOrderContent) modalDetailOrderContent.innerHTML = spHtml;
+
+        let classDetailBtn = order.status == 0 ? "btn-chuaxuly" : "btn-daxuly";
+        let textDetailBtn = order.status == 0 ? "Xử lý đơn" : "Hủy xử lý";
+        let nextStatusOnClick = order.status == 0 ? 1 : 0;
+
+        const modalDetailBottom = detailOrderModal.querySelector(".modal-detail-bottom");
+        if (modalDetailBottom) {
+            modalDetailBottom.innerHTML = `
+            <div class="modal-detail-bottom-left">
+                <div class="price-total">
+                    <span class="thanhtien">Thành tiền</span>
+                    <span class="price">${vnd(order.total_amount)}</span>
                 </div>
             </div>
-            <div class="order-product-right">
-                <div class="order-product-price">
-                    <span class="order-product-current-price">${vnd(item.price)}</span>
-                </div>                         
-            </div>
-        </div>`;
-    });
-    spHtml += `</div></div>`;
-    spHtml += `<div class="modal-detail-right">
-        <ul class="detail-order-group">
-            <li class="detail-order-item">
-                <span class="detail-order-item-left"><i class="fa-light fa-calendar-days"></i> Ngày đặt hàng</span>
-                <span class="detail-order-item-right">${formatDate(order.thoigiandat)}</span>
-            </li>
-            <li class="detail-order-item">
-                <span class="detail-order-item-left"><i class="fa-light fa-truck"></i> Hình thức giao</span>
-                <span class="detail-order-item-right">${order.hinhthucgiao}</span>
-            </li>
-            <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-thin fa-person"></i> Người nhận</span>
-            <span class="detail-order-item-right">${order.tenguoinhan}</span>
-            </li>
-            <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-light fa-phone"></i> Số điện thoại</span>
-            <span class="detail-order-item-right">${order.sdtnhan}</span>
-            </li>
-            <li class="detail-order-item tb">
-                <span class="detail-order-item-left"><i class="fa-light fa-clock"></i> Thời gian giao</span>
-                <p class="detail-order-item-b">${(order.thoigiangiao == "" ? "" : (order.thoigiangiao + " - ")) + formatDate(order.ngaygiaohang)}</p>
-            </li>
-            <li class="detail-order-item tb">
-                <span class="detail-order-item-t"><i class="fa-light fa-location-dot"></i> Địa chỉ nhận</span>
-                <p class="detail-order-item-b">${order.diachinhan}</p>
-            </li>
-            <li class="detail-order-item tb">
-                <span class="detail-order-item-t"><i class="fa-light fa-note-sticky"></i> Ghi chú</span>
-                <p class="detail-order-item-b">${order.ghichu}</p>
-            </li>
-        </ul>
-    </div>`;
-    document.querySelector(".modal-detail-order").innerHTML = spHtml;
-
-    let classDetailBtn = order.trangthai == 0 ? "btn-chuaxuly" : "btn-daxuly";
-    let textDetailBtn = order.trangthai == 0 ? "Chưa xử lý" : "Đã xử lý";
-    document.querySelector(
-        ".modal-detail-bottom"
-    ).innerHTML = `<div class="modal-detail-bottom-left">
-        <div class="price-total">
-            <span class="thanhtien">Thành tiền</span>
-            <span class="price">${vnd(order.tongtien)}</span>
-        </div>
-    </div>
-    <div class="modal-detail-bottom-right">
-        <button class="modal-detail-btn ${classDetailBtn}" onclick="changeStatus('${order.id}',this)">${textDetailBtn}</button>
-    </div>`;
+            <div class="modal-detail-bottom-right">
+                <button class="modal-detail-btn ${classDetailBtn}" onclick="changeOrderStatusInDetail('${order.id}', ${nextStatusOnClick}, this)">${textDetailBtn}</button>
+            </div>`;
+        }
+    } catch (error) {
+        console.error("Error fetching order detail for admin:", error);
+        toast({ title: "Lỗi", message: "Không thể tải chi tiết đơn hàng.", type: "error" });
+    }
 }
 
-// Find Order
-function findOrder() {
-    let tinhTrang = parseInt(document.getElementById("tinh-trang").value);
-    let ct = document.getElementById("form-search-order").value;
-    let timeStart = document.getElementById("time-start").value;
-    let timeEnd = document.getElementById("time-end").value;
-    
-    if (timeEnd < timeStart && timeEnd != "" && timeStart != "") {
-        alert("Lựa chọn thời gian sai !");
+async function findOrder(externalFilters = {}) {
+    let tinhTrangValue = document.getElementById("tinh-trang").value;
+    let searchValue = document.getElementById("form-search-order").value;
+    let timeStartValue = document.getElementById("time-start").value;
+    let timeEndValue = document.getElementById("time-end").value;
+
+    if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
+        alert("Ngày kết thúc không thể trước ngày bắt đầu!");
         return;
     }
-    let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
-    let result = tinhTrang == 2 ? orders : orders.filter((item) => {
-        return item.trangthai == tinhTrang;
-    });
-    result = ct == "" ? result : result.filter((item) => {
-        return (item.khachhang.toLowerCase().includes(ct.toLowerCase()) || item.id.toString().toLowerCase().includes(ct.toLowerCase()));
-    });
+    const params = {
+        page: adminCurrentPage,
+        limit: adminPerPage,
+        ...externalFilters
+    };
 
-    if (timeStart != "" && timeEnd == "") {
-        result = result.filter((item) => {
-            return new Date(item.thoigiandat) >= new Date(timeStart).setHours(0, 0, 0);
-        });
-    } else if (timeStart == "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return new Date(item.thoigiandat) <= new Date(timeEnd).setHours(23, 59, 59);
-        });
-    } else if (timeStart != "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return (new Date(item.thoigiandat) >= new Date(timeStart).setHours(0, 0, 0) && new Date(item.thoigiandat) <= new Date(timeEnd).setHours(23, 59, 59)
-            );
-        });
+    if (tinhTrangValue && tinhTrangValue !== "2") {
+        params.status = parseInt(tinhTrangValue);
     }
-    showOrder(result);
+    if (searchValue) {
+        params.search = searchValue;
+    }
+    if (timeStartValue) {
+        params.dateStart = timeStartValue;
+    }
+    if (timeEndValue) {
+        params.dateEnd = timeEndValue;
+    }
+
+    try {
+        const ordersData = await ApiService.fetchAdminOrders(params);
+        showOrder(ordersData);
+    } catch (error) {
+        console.error("Error finding orders:", error);
+        toast({ title: "Lỗi", message: "Tìm kiếm đơn hàng thất bại.", type: "error" });
+        const showOrderEl = document.getElementById("showOrder");
+        if (showOrderEl) showOrderEl.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi tải đơn hàng.</td></tr>`;
+    }
 }
 
-function cancelSearchOrder(){
-    let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
-    document.getElementById("tinh-trang").value = 2;
+async function cancelSearchOrder(){
+    document.getElementById("tinh-trang").value = "2";
     document.getElementById("form-search-order").value = "";
     document.getElementById("time-start").value = "";
     document.getElementById("time-end").value = "";
-    showOrder(orders);
+    adminCurrentPage = 1;
+    await findOrder();
 }
 
-// Create Object Thong ke
-function createObj() {
-    let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
-    let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : []; 
-    let orderDetails = localStorage.getItem("orderDetails") ? JSON.parse(localStorage.getItem("orderDetails")) : []; 
-    let result = [];
-    orderDetails.forEach(item => {
-        // Lấy thông tin sản phẩm
-        let prod = products.find(product => {return product.id == item.id;});
-        let obj = new Object();
-        obj.id = item.id;
-        obj.madon = item.madon;
-        obj.price = item.price;
-        obj.quantity = item.soluong;
-        obj.category = prod.category;
-        obj.title = prod.title;
-        obj.img = prod.img;
-        obj.time = (orders.find(order => order.id == item.madon)).thoigiandat;
-        result.push(obj);
-    });
-    return result;
-}
+async function thongKe(sortMode, externalFilters = {}) {
+    let categoryTkValue = document.getElementById("the-loai-tk").value;
+    let searchValue = document.getElementById("form-search-tk").value;
+    let timeStartValue = document.getElementById("time-start-tk").value;
+    let timeEndValue = document.getElementById("time-end-tk").value;
 
-// Filter 
-function thongKe(mode) {
-    let categoryTk = document.getElementById("the-loai-tk").value;
-    let ct = document.getElementById("form-search-tk").value;
-    let timeStart = document.getElementById("time-start-tk").value;
-    let timeEnd = document.getElementById("time-end-tk").value;
-    if (timeEnd < timeStart && timeEnd != "" && timeStart != "") {
-        alert("Lựa chọn thời gian sai !");
+    if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
+        alert("Ngày kết thúc không thể trước ngày bắt đầu!");
         return;
     }
-    let arrDetail = createObj();
-    let result = categoryTk == "Tất cả" ? arrDetail : arrDetail.filter((item) => {
-        return item.category == categoryTk;
-    });
 
-    result = ct == "" ? result : result.filter((item) => {
-        return (item.title.toLowerCase().includes(ct.toLowerCase()));
-    });
+    const params = {
+        sortBy: sortMode,
+        ...externalFilters
+    };
 
-    if (timeStart != "" && timeEnd == "") {
-        result = result.filter((item) => {
-            return new Date(item.time) > new Date(timeStart).setHours(0, 0, 0);
-        });
-    } else if (timeStart == "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return new Date(item.time) < new Date(timeEnd).setHours(23, 59, 59);
-        });
-    } else if (timeStart != "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return (new Date(item.time) > new Date(timeStart).setHours(0, 0, 0) && new Date(item.time) < new Date(timeEnd).setHours(23, 59, 59)
-            );
-        });
-    }    
-    showThongKe(result,mode);
-}
-
-// Show số lượng sp, số lượng đơn bán, doanh thu
-function showOverview(arr){
-    document.getElementById("quantity-product").innerText = arr.length;
-    document.getElementById("quantity-order").innerText = arr.reduce((sum, cur) => (sum + parseInt(cur.quantity)),0);
-    document.getElementById("quantity-sale").innerText = vnd(arr.reduce((sum, cur) => (sum + parseInt(cur.doanhthu)),0));
-}
-
-function showThongKe(arr,mode) {
-    let orderHtml = "";
-    let mergeObj = mergeObjThongKe(arr);
-    showOverview(mergeObj);
-
-    switch (mode){
-        case 0:
-            mergeObj = mergeObjThongKe(createObj());
-            showOverview(mergeObj);
-            document.getElementById("the-loai-tk").value = "Tất cả";
-            document.getElementById("form-search-tk").value = "";
-            document.getElementById("time-start-tk").value = "";
-            document.getElementById("time-end-tk").value = "";
-            break;
-        case 1:
-            mergeObj.sort((a,b) => parseInt(a.quantity) - parseInt(b.quantity))
-            break;
-        case 2:
-            mergeObj.sort((a,b) => parseInt(b.quantity) - parseInt(a.quantity))
-            break;
+    if (categoryTkValue && categoryTkValue !== "Tất cả") {
+        params.category = categoryTkValue;
     }
-    for(let i = 0; i < mergeObj.length; i++) {
-        orderHtml += `
-        <tr>
-        <td>${i + 1}</td>
-        <td><div class="prod-img-title"><img class="prd-img-tbl" src="${mergeObj[i].img}" alt=""><p>${mergeObj[i].title}</p></div></td>
-        <td>${mergeObj[i].quantity}</td>
-        <td>${vnd(mergeObj[i].doanhthu)}</td>
-        <td><button class="btn-detail product-order-detail" data-id="${mergeObj[i].id}"><i class="fa-regular fa-eye"></i> Chi tiết</button></td>
-        </tr>      
-        `;
+    if (searchValue) {
+        params.search = searchValue;
     }
-    document.getElementById("showTk").innerHTML = orderHtml;
-    document.querySelectorAll(".product-order-detail").forEach(item => {
-        let idProduct = item.getAttribute("data-id");
-        item.addEventListener("click", () => {           
-            detailOrderProduct(arr,idProduct);
-        })
-    })
+    if (timeStartValue) {
+        params.dateStart = timeStartValue;
+    }
+    if (timeEndValue) {
+        params.dateEnd = timeEndValue;
+    }
+
+     if (sortMode === 0 && Object.keys(externalFilters).length === 0) {
+        document.getElementById("the-loai-tk").value = "Tất cả";
+        document.getElementById("form-search-tk").value = "";
+        document.getElementById("time-start-tk").value = "";
+        document.getElementById("time-end-tk").value = "";
+        delete params.category;
+        delete params.search;
+        delete params.dateStart;
+        delete params.dateEnd;
+        params.sortBy = undefined;
+    }
+
+    try {
+        const salesReport = await ApiService.fetchAdminSalesReport(params);
+        showThongKeTable(salesReport);
+        updateThongKeOverview(salesReport);
+    } catch (error) {
+        console.error("Error fetching sales report:", error);
+        toast({ title: "Lỗi", message: "Không thể tải dữ liệu thống kê.", type: "error" });
+    }
 }
 
-showThongKe(createObj())
+function updateThongKeOverview(reportData) {
+    if (!reportData) return;
+    let totalProductsSoldSet = new Set();
+    let totalQuantity = 0;
+    let totalRevenue = 0;
 
-function mergeObjThongKe(arr) {
-    let result = [];
-    arr.forEach(item => {
-        let check = result.find(i => i.id == item.id) // Không tìm thấy gì trả về undefined
-
-        if(check){
-            check.quantity = parseInt(check.quantity)  + parseInt(item.quantity);
-            check.doanhthu += parseInt(item.price) * parseInt(item.quantity);
-        } else {
-            const newItem = {...item}
-            newItem.doanhthu = newItem.price * newItem.quantity;
-            result.push(newItem);
-        }
-        
+    reportData.forEach(item => {
+        totalProductsSoldSet.add(item.product_id);
+        totalQuantity += parseInt(item.total_quantity_sold);
+        totalRevenue += parseFloat(item.total_revenue_from_product);
     });
-    return result;
+
+    document.getElementById("quantity-product").innerText = totalProductsSoldSet.size;
+    document.getElementById("quantity-order").innerText = totalQuantity;
+    document.getElementById("quantity-sale").innerText = vnd(totalRevenue);
 }
 
-function detailOrderProduct(arr,id) {
+function showThongKeTable(reportData) {
     let orderHtml = "";
-    arr.forEach(item => {
-        if(item.id == id) {
-            orderHtml += `<tr>
-            <td>${item.madon}</td>
-            <td>${item.quantity}</td>
-            <td>${vnd(item.price)}</td>
-            <td>${formatDate(item.time)}</td>
-            </tr>      
+    const showTkElement = document.getElementById("showTk");
+    if (!showTkElement) return;
+
+    if (!reportData || reportData.length === 0) {
+        orderHtml = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu thống kê.</td></tr>`;
+    } else {
+        reportData.forEach((item, index) => {
+            orderHtml += `
+            <tr>
+            <td>${index + 1}</td>
+            <td><div class="prod-img-title"><img class="prd-img-tbl" src="${item.product_img_url || './assets/img/blank-image.png'}" alt="${item.product_title}"><p>${item.product_title}</p></div></td>
+            <td>${item.total_quantity_sold}</td>
+            <td>${vnd(item.total_revenue_from_product)}</td>
+            <td><button class="btn-detail product-order-detail" data-product-id="${item.product_id}"><i class="fa-regular fa-eye"></i> Chi tiết đơn</button></td>
+            </tr>
             `;
-        }
+        });
+    }
+    showTkElement.innerHTML = orderHtml;
+
+    document.querySelectorAll(".product-order-detail").forEach(btn => {
+        btn.onclick = () => {
+            const prodId = btn.dataset.productId;
+            toast({title: "Thông tin", message: `Chi tiết đơn hàng cho sản phẩm ID ${prodId} (chức năng này cần API riêng).`, type: "info"})
+        };
     });
-    document.getElementById("show-product-order-detail").innerHTML = orderHtml
-    document.querySelector(".modal.detail-order-product").classList.add("open")
 }
 
-// User
-let addAccount = document.getElementById('signup-button');
-let updateAccount = document.getElementById("btn-update-account")
-
-document.querySelector(".modal.signup .modal-close").addEventListener("click",() => {
-    signUpFormReset();
-})
-
-function openCreateAccount() {
-    document.querySelector(".signup").classList.add("open");
-    document.querySelectorAll(".edit-account-e").forEach(item => {
-        item.style.display = "none"
-    })
-    document.querySelectorAll(".add-account-e").forEach(item => {
-        item.style.display = "block"
-    })
-}
+let currentEditingUserId = null;
 
 function signUpFormReset() {
-    document.getElementById('fullname').value = ""
-    document.getElementById('phone').value = ""
-    document.getElementById('password').value = ""
-    document.querySelector('.form-message-name').innerHTML = '';
-    document.querySelector('.form-message-phone').innerHTML = '';
-    document.querySelector('.form-message-password').innerHTML = '';
+    const signupModal = document.querySelector(".modal.signup");
+    if (!signupModal) return;
+    const fullnameInput = signupModal.querySelector('#fullname');
+    if (fullnameInput) fullnameInput.value = "";
+    const phoneInput = signupModal.querySelector('#phone');
+    if (phoneInput) phoneInput.value = "";
+    const passwordInput = signupModal.querySelector('#password');
+    if (passwordInput) {
+        passwordInput.value = "";
+        passwordInput.placeholder = "Nhập mật khẩu";
+        passwordInput.disabled = false;
+    }
+    const userStatusCheckbox = signupModal.querySelector('#user-status');
+    if (userStatusCheckbox) userStatusCheckbox.checked = true;
+    const nameMsg = signupModal.querySelector('.form-message-name');
+    if (nameMsg) nameMsg.innerHTML = '';
+    const phoneMsg = signupModal.querySelector('.form-message-phone');
+    if (phoneMsg) phoneMsg.innerHTML = '';
+    const passMsg = signupModal.querySelector('.form-message-password');
+    if (passMsg) passMsg.innerHTML = '';
+    currentEditingUserId = null;
 }
 
-function showUserArr(arr) {
+function openCreateAccount() {
+    signUpFormReset();
+    const signupModal = document.querySelector(".modal.signup");
+    if (!signupModal) return;
+    signupModal.classList.add("open");
+    signupModal.querySelectorAll(".edit-account-e").forEach(item => item.style.display = "none");
+    signupModal.querySelectorAll(".add-account-e").forEach(item => item.style.display = "block");
+    const passwordField = signupModal.querySelector('#password');
+    if (passwordField) passwordField.disabled = false;
+}
+
+async function showUserArr(usersArray) {
     let accountHtml = '';
-    if(arr.length == 0) {
-        accountHtml = `<td colspan="5">Không có dữ liệu</td>`
+    const showUserElement = document.getElementById('show-user');
+    if (!showUserElement) return;
+
+    if(!usersArray || usersArray.length == 0) {
+        accountHtml = `<tr><td colspan="6" style="text-align:center;">Không có khách hàng nào.</td></tr>`;
     } else {
-        arr.forEach((account, index) => {
+        usersArray.forEach((account, index) => {
             let tinhtrang = account.status == 0 ? `<span class="status-no-complete">Bị khóa</span>` : `<span class="status-complete">Hoạt động</span>`;
             accountHtml += ` <tr>
             <td>${index + 1}</td>
             <td>${account.fullname}</td>
-            <td>${account.phone}</td>
-            <td>${formatDate(account.join)}</td>
+            <td>${account.phone} <br/> <small>${account.email || 'N/A'}</small></td>
+            <td>${formatDate(account.join_date)}</td>
             <td>${tinhtrang}</td>
             <td class="control control-table">
-            <button class="btn-edit" id="edit-account" onclick='editAccount(${account.phone})' ><i class="fa-light fa-pen-to-square"></i></button>
-            <button class="btn-delete" id="delete-account" onclick="deleteAcount(${index})"><i class="fa-regular fa-trash"></i></button>
+            <button class="btn-edit" onclick='editAccount(${account.id})'><i class="fa-light fa-pen-to-square"></i></button>
+            <button class="btn-delete" onclick="deleteAccount(${account.id})"><i class="fa-regular fa-trash"></i></button>
             </td>
         </tr>`
         })
     }
-    document.getElementById('show-user').innerHTML = accountHtml;
+    showUserElement.innerHTML = accountHtml;
 }
 
-function showUser() {
-    let tinhTrang = parseInt(document.getElementById("tinh-trang-user").value);
-    let ct = document.getElementById("form-search-user").value;
-    let timeStart = document.getElementById("time-start-user").value;
-    let timeEnd = document.getElementById("time-end-user").value;
+async function showUser(externalFilters = {}) {
+    let tinhTrangValue = document.getElementById("tinh-trang-user").value;
+    let searchValue = document.getElementById("form-search-user").value;
+    let timeStartValue = document.getElementById("time-start-user").value;
+    let timeEndValue = document.getElementById("time-end-user").value;
 
-    if (timeEnd < timeStart && timeEnd != "" && timeStart != "") {
-        alert("Lựa chọn thời gian sai !");
+    if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
+        alert("Ngày kết thúc không thể trước ngày bắt đầu!");
         return;
     }
+    const params = {
+        page: adminCurrentPage,
+        limit: adminPerPage,
+        userType: 0,
+        ...externalFilters
+    };
 
-    let accounts = localStorage.getItem("accounts") ? JSON.parse(localStorage.getItem("accounts")).filter(item => item.userType == 0) : [];
-    let result = tinhTrang == 2 ? accounts : accounts.filter(item => item.status == tinhTrang);
-
-    result = ct == "" ? result : result.filter((item) => {
-        return (item.fullname.toLowerCase().includes(ct.toLowerCase()) || item.phone.toString().toLowerCase().includes(ct.toLowerCase()));
-    });
-
-    if (timeStart != "" && timeEnd == "") {
-        result = result.filter((item) => {
-            return new Date(item.join) >= new Date(timeStart).setHours(0, 0, 0);
-        });
-    } else if (timeStart == "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return new Date(item.join) <= new Date(timeEnd).setHours(23, 59, 59);
-        });
-    } else if (timeStart != "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return (new Date(item.join) >= new Date(timeStart).setHours(0, 0, 0) && new Date(item.join) <= new Date(timeEnd).setHours(23, 59, 59)
-            );
-        });
+    if (tinhTrangValue && tinhTrangValue !== "2") {
+        params.status = parseInt(tinhTrangValue);
     }
-    showUserArr(result);
+    if (searchValue) {
+        params.search = searchValue;
+    }
+    if (timeStartValue) {
+        params.dateStart = timeStartValue;
+    }
+    if (timeEndValue) {
+        params.dateEnd = timeEndValue;
+    }
+
+    try {
+        const usersData = await ApiService.fetchAdminUsers(params);
+        showUserArr(usersData);
+        if (usersData.pagination) {
+             setupAdminPagination(usersData.pagination.totalItems, adminPerPage, usersData.pagination.currentPage, 'user', params);
+        } else if (Array.isArray(usersData)) {
+        }
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        toast({ title: "Lỗi", message: "Không thể tải danh sách khách hàng.", type: "error" });
+        const showUserEl = document.getElementById('show-user');
+        if(showUserEl) showUserEl.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi tải dữ liệu.</td></tr>`;
+    }
 }
 
-function cancelSearchUser() {
-    let accounts = localStorage.getItem("accounts") ? JSON.parse(localStorage.getItem("accounts")).filter(item => item.userType == 0) : [];
-    showUserArr(accounts);
-    document.getElementById("tinh-trang-user").value = 2;
+async function cancelSearchUser() {
+    document.getElementById("tinh-trang-user").value = "2";
     document.getElementById("form-search-user").value = "";
     document.getElementById("time-start-user").value = "";
     document.getElementById("time-end-user").value = "";
+    adminCurrentPage = 1;
+    await showUser();
 }
 
-window.onload = showUser();
-
-function deleteAcount(phone) {
-    let accounts = JSON.parse(localStorage.getItem('accounts'));
-    let index = accounts.findIndex(item => item.phone == phone);
-    if (confirm("Bạn có chắc muốn xóa?")) {
-        accounts.splice(index, 1)
+async function deleteAccount(userId) {
+    if (confirm("Bạn có chắc muốn xóa khách hàng này? Hành động này không thể hoàn tác.")) {
+        try {
+            await ApiService.deleteUserByAdmin(userId);
+            toast({ title: 'Thành công', message: 'Khách hàng đã được xóa.', type: 'success' });
+            await showUser({page: adminCurrentPage});
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            toast({ title: 'Lỗi', message: error.data?.message || 'Không thể xóa khách hàng.', type: 'error' });
+        }
     }
-    localStorage.setItem("accounts", JSON.stringify(accounts));
-    showUser();
 }
 
-let indexFlag;
-function editAccount(phone) {
-    document.querySelector(".signup").classList.add("open");
-    document.querySelectorAll(".add-account-e").forEach(item => {
-        item.style.display = "none"
-    })
-    document.querySelectorAll(".edit-account-e").forEach(item => {
-        item.style.display = "block"
-    })
-    let accounts = JSON.parse(localStorage.getItem("accounts"));
-    let index = accounts.findIndex(item => {
-        return item.phone == phone
-    })
-    indexFlag = index;
-    document.getElementById("fullname").value = accounts[index].fullname;
-    document.getElementById("phone").value = accounts[index].phone;
-    document.getElementById("password").value = accounts[index].password;
-    document.getElementById("user-status").checked = accounts[index].status == 1 ? true : false;
-}
-
-updateAccount.addEventListener("click", (e) => {
-    e.preventDefault();
-    let accounts = JSON.parse(localStorage.getItem("accounts"));
-    let fullname = document.getElementById("fullname").value;
-    let phone = document.getElementById("phone").value;
-    let password = document.getElementById("password").value;
-    if(fullname == "" || phone == "" || password == "") {
-        toast({ title: 'Chú ý', message: 'Vui lòng nhập đầy đủ thông tin !', type: 'warning', duration: 3000 });
-    } else {
-        accounts[indexFlag].fullname = document.getElementById("fullname").value;
-        accounts[indexFlag].phone = document.getElementById("phone").value;
-        accounts[indexFlag].password = document.getElementById("password").value;
-        accounts[indexFlag].status = document.getElementById("user-status").checked ? true : false;
-        localStorage.setItem("accounts", JSON.stringify(accounts));
-        toast({ title: 'Thành công', message: 'Thay đổi thông tin thành công !', type: 'success', duration: 3000 });
-        document.querySelector(".signup").classList.remove("open");
+async function editAccount(userId) {
+    try {
+        const user = await ApiService.fetchAdminUserById(userId);
+        if (!user) {
+            toast({title: "Lỗi", message: "Không tìm thấy người dùng.", type: "error"});
+            return;
+        }
+        currentEditingUserId = userId;
         signUpFormReset();
-        showUser();
+
+        const signupModal = document.querySelector(".modal.signup");
+        if (!signupModal) return;
+
+        signupModal.classList.add("open");
+        signupModal.querySelectorAll(".add-account-e").forEach(item => item.style.display = "none");
+        signupModal.querySelectorAll(".edit-account-e").forEach(item => item.style.display = "block");
+
+        const passwordField = signupModal.querySelector('#password');
+        if (passwordField) {
+             passwordField.value = "";
+             passwordField.placeholder = "Để trống nếu không đổi mật khẩu";
+             passwordField.disabled = false;
+        }
+
+        const fullnameInput = signupModal.querySelector('#fullname');
+        if (fullnameInput) fullnameInput.value = user.fullname;
+        const phoneInput = signupModal.querySelector('#phone');
+        if (phoneInput) phoneInput.value = user.phone;
+        const userStatusCheckbox = signupModal.querySelector('#user-status');
+        if (userStatusCheckbox) userStatusCheckbox.checked = user.status === 1;
+
+    } catch (error) {
+        console.error("Error fetching user for edit:", error);
+        toast({title: "Lỗi", message: "Không thể tải thông tin khách hàng.", type: "error"});
     }
-})
+}
 
-addAccount.addEventListener("click", (e) => {
-    e.preventDefault();
-    let fullNameUser = document.getElementById('fullname').value;
-    let phoneUser = document.getElementById('phone').value;
-    let passwordUser = document.getElementById('password').value;
-        // Check validate
-        let fullNameIP = document.getElementById('fullname');
-        let formMessageName = document.querySelector('.form-message-name');
-        let formMessagePhone = document.querySelector('.form-message-phone');
-        let formMessagePassword = document.querySelector('.form-message-password');
-    
-        if (fullNameUser.length == 0) {
-            formMessageName.innerHTML = 'Vui lòng nhập họ vâ tên';
-            fullNameIP.focus();
-        } else if (fullNameUser.length < 3) {
-            fullNameIP.value = '';
-            formMessageName.innerHTML = 'Vui lòng nhập họ và tên lớn hơn 3 kí tự';
+const btnUpdateAccount = document.getElementById("btn-update-account");
+if (btnUpdateAccount) {
+    btnUpdateAccount.addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (!currentEditingUserId) {
+            toast({ title: 'Lỗi', message: 'Không có khách hàng nào được chọn để sửa.', type: 'warning' });
+            return;
         }
-        
-        if (phoneUser.length == 0) {
-            formMessagePhone.innerHTML = 'Vui lòng nhập vào số điện thoại';
-        } else if (phoneUser.length != 10) {
-            formMessagePhone.innerHTML = 'Vui lòng nhập vào số điện thoại 10 số';
-            document.getElementById('phone').value = '';
-        }
-        
-        if (passwordUser.length == 0) {
-            formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu';
-        } else if (passwordUser.length < 6) {
-            formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu lớn hơn 6 kí tự';
-            document.getElementById('password').value = '';
-        }
+        const signupModal = document.querySelector(".modal.signup");
+        if (!signupModal) return;
 
-    if (fullNameUser && phoneUser && passwordUser) {
-        let user = {
-            fullname: fullNameUser,
-            phone: phoneUser,
-            password: passwordUser,
-            address: '',
-            email: '',
-            status: 1,
-            join: new Date(),
-            cart: [],
-            userType: 0
-        }
-        console.log(user);
-        let accounts = localStorage.getItem('accounts') ? JSON.parse(localStorage.getItem('accounts')) : [];
-        let checkloop = accounts.some(account => {
-            return account.phone == user.phone;
-        })
-        if (!checkloop) {
-            accounts.push(user);
-            localStorage.setItem('accounts', JSON.stringify(accounts));
-            toast({ title: 'Thành công', message: 'Tạo thành công tài khoản !', type: 'success', duration: 3000 });
-            document.querySelector(".signup").classList.remove("open");
-            showUser();
+        const fullname = signupModal.querySelector('#fullname').value;
+        const phone = signupModal.querySelector('#phone').value;
+        const password = signupModal.querySelector('#password').value;
+        const status = signupModal.querySelector('#user-status').checked ? 1 : 0;
+
+        let isValid = true;
+        const nameMsg = signupModal.querySelector('.form-message-name');
+        const phoneMsg = signupModal.querySelector('.form-message-phone');
+        const passMsg = signupModal.querySelector('.form-message-password');
+
+        if (!fullname) { if(nameMsg) nameMsg.innerHTML = 'Họ tên không được trống.'; isValid = false; }
+        else { if(nameMsg) nameMsg.innerHTML = '';}
+
+        if (!phone) { if(phoneMsg) phoneMsg.innerHTML = 'SĐT không được trống.'; isValid = false; }
+        else if (phone.length !== 10 || !/^\d+$/.test(phone)) { if(phoneMsg) phoneMsg.innerHTML = 'SĐT không hợp lệ.'; isValid = false; }
+        else { if(phoneMsg) phoneMsg.innerHTML = '';}
+
+        if (password && password.length < 6) { if(passMsg) passMsg.innerHTML = 'Mật khẩu mới phải ít nhất 6 ký tự.'; isValid = false; }
+        else { if(passMsg) passMsg.innerHTML = '';}
+
+        if (!isValid) return;
+
+        const userData = { fullname, phone, status, user_type: 0 };
+        if (password) { userData.password = password; }
+
+        try {
+            await ApiService.updateUserByAdmin(currentEditingUserId, userData);
+            toast({ title: 'Thành công', message: 'Thông tin khách hàng đã được cập nhật.', type: 'success' });
+            signupModal.classList.remove("open");
             signUpFormReset();
-        } else {
-            toast({ title: 'Cảnh báo !', message: 'Tài khoản đã tồn tại !', type: 'error', duration: 3000 });
+            await showUser({page: adminCurrentPage});
+        } catch (error) {
+            console.error("Error updating user by admin:", error);
+            toast({ title: 'Lỗi', message: error.data?.message || 'Cập nhật thất bại.', type: 'error' });
         }
-    }
-})
+    });
+}
 
-document.getElementById("logout-acc").addEventListener('click', (e) => {
-    e.preventDefault();
-    localStorage.removeItem("currentuser");
-    window.location = "/";
-})
+const addAccountButtonInModal = document.querySelector('.modal.signup #signup-button');
+if (addAccountButtonInModal) {
+    addAccountButtonInModal.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const signupModal = document.querySelector(".modal.signup");
+        if (!signupModal) return;
+
+        const fullNameUser = signupModal.querySelector('#fullname').value;
+        const phoneUser = signupModal.querySelector('#phone').value;
+        const passwordUser = signupModal.querySelector('#password').value;
+
+        let isValid = true;
+        const formMessageName = signupModal.querySelector('.form-message-name');
+        const formMessagePhone = signupModal.querySelector('.form-message-phone');
+        const formMessagePassword = signupModal.querySelector('.form-message-password');
+
+        if (!fullNameUser) { if(formMessageName) formMessageName.innerHTML = 'Vui lòng nhập họ và tên.'; isValid = false; }
+        else if (fullNameUser.length < 3) { if(formMessageName) formMessageName.innerHTML = 'Họ tên phải ít nhất 3 ký tự.'; isValid = false; }
+        else { if(formMessageName) formMessageName.innerHTML = ''; }
+
+        if (!phoneUser) { if(formMessagePhone) formMessagePhone.innerHTML = 'Vui lòng nhập số điện thoại.'; isValid = false; }
+        else if (phoneUser.length !== 10 || !/^\d+$/.test(phoneUser)) { if(formMessagePhone) formMessagePhone.innerHTML = 'Số điện thoại không hợp lệ (10 số).'; isValid = false; }
+        else { if(formMessagePhone) formMessagePhone.innerHTML = ''; }
+
+        if (!passwordUser) { if(formMessagePassword) formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu.'; isValid = false; }
+        else if (passwordUser.length < 6) { if(formMessagePassword) formMessagePassword.innerHTML = 'Mật khẩu phải ít nhất 6 ký tự.'; isValid = false; }
+        else { if(formMessagePassword) formMessagePassword.innerHTML = ''; }
+
+        if (!isValid) return;
+
+        try {
+            const newUser = { fullname: fullNameUser, phone: phoneUser, password: passwordUser, user_type: 0, status: 1 };
+            await ApiService.createUserByAdmin(newUser);
+            toast({ title: 'Thành công', message: 'Tạo khách hàng mới thành công!', type: 'success' });
+            signupModal.classList.remove("open");
+            signUpFormReset();
+            adminCurrentPage = 1;
+            await showUser();
+        } catch (error) {
+            console.error("Error creating user by admin:", error);
+            toast({ title: 'Lỗi', message: error.data?.message || 'Tạo khách hàng thất bại.', type: 'error' });
+        }
+    });
+}
+
+const logoutAccButton = document.getElementById("logout-acc");
+if (logoutAccButton) {
+    logoutAccButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        ApiService.logoutUser();
+        window.location = "/";
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const isAdminLoggedIn = await checkLogin();
+    if (isAdminLoggedIn) {
+        await loadDashboardStats();
+        await showProduct();
+        await findOrder();
+        await thongKe(0);
+        await showUser();
+    }
+});

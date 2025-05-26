@@ -67,14 +67,39 @@ exports.updateUserPassword = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const { status, search, joinDateStart, joinDateEnd, userType } = req.query;
+    let { status, search, joinDateStart, joinDateEnd, userType } = req.query;
+
+    if (status === 'undefined') status = undefined;
+    if (search === 'undefined') search = undefined;
+    if (joinDateStart === 'undefined') joinDateStart = undefined;
+    if (joinDateEnd === 'undefined') joinDateEnd = undefined;
+    if (userType === 'undefined') userType = undefined;
+
+    let parsedStatus;
+    if (status !== undefined && status !== null && status !== '2' && status !== 2 && status !== '') {
+      parsedStatus = parseInt(status, 10);
+      if (isNaN(parsedStatus)) {
+        parsedStatus = undefined;
+      }
+    } else if (status === '2' || status === 2 || status === '') {
+        parsedStatus = undefined;
+    }
+
+    let parsedUserType;
+    if (userType !== undefined && userType !== null && !isNaN(parseInt(userType, 10))) {
+        parsedUserType = parseInt(userType, 10);
+    } else {
+        parsedUserType = 0;
+    }
+
     const filters = {
-        status: status,
-        search,
-        joinDateStart,
-        joinDateEnd,
-        userType: userType !== undefined ? parseInt(userType) : undefined
+        status: parsedStatus,
+        search: search || undefined,
+        joinDateStart: joinDateStart || undefined,
+        joinDateEnd: joinDateEnd || undefined,
+        userType: parsedUserType
     };
+
     const users = await User.findAll(filters);
     res.json(users);
   } catch (error) {

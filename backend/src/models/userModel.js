@@ -40,14 +40,17 @@ const User = {
     let sql = 'SELECT id, fullname, phone, email, address, status, join_date, user_type FROM users WHERE 1=1';
     const params = [];
 
-    if (filters.userType !== undefined) {
+    if (filters.userType !== undefined && !isNaN(filters.userType)) {
         sql += ' AND user_type = ?';
         params.push(filters.userType);
+    } else {
+        sql += ' AND user_type = ?';
+        params.push(0);
     }
 
-    if (filters.status !== undefined && filters.status !== '2' && filters.status !== 2) {
+    if (filters.status !== undefined && !isNaN(filters.status)) {
         sql += ' AND status = ?';
-        params.push(parseInt(filters.status));
+        params.push(filters.status);
     }
 
     if (filters.search) {
