@@ -6,11 +6,11 @@ const { hashPassword } = require('./utils/passwordUtils');
 
 async function createAdminAccount() {
   const adminData = {
-    fullname: 'Super Admin VyFood', 
+    fullname: 'Super Admin', 
     phone: '0901772837',         
     password: 'leminhtuan123', 
-    email: 'admin@vyfood.com',
-    address: 'VyFood Headquarters',
+    email: 'admin@ttvres.com',
+    address: 'Headquarters',
     user_type: 1,
     status: 1
   };
