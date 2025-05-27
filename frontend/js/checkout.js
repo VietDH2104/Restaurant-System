@@ -378,7 +378,3 @@ async function xulyDathang(itemsToOrder, subtotal) {
         toast({ title: 'Thất bại', message: error.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại.', type: 'error', duration: 4000 });
     }
 }
-
-// Assuming global functions from main.js are available:
-// vnd(), getCartTotal(), getAmountCart(), loginbtn, closeModal(), body, toast()
-// And ApiService is globally available.
