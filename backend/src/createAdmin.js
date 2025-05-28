@@ -10,7 +10,7 @@ async function createAdminAccount() {
     phone: '0901772837',         
     password: 'leminhtuan123', 
     email: 'admin@ttvres.com',
-    address: 'Headquarters',
+    address: 'TTVRes Headquarters',
     user_type: 1,
     status: 1
   };

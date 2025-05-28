@@ -15,7 +15,7 @@
     text-decoration: none;
 }
 :root {
-    --red: #b5292f;
+    --orange: #fd8166;
     --lightest-gray: rgb(249, 249, 249);
     --lighter-gray: rgb(240, 240, 240);
     --light-gray: rgb(144, 144, 144);
@@ -108,7 +108,7 @@ body,input,button,textarea,pre {
 }
 
 .switch-input:checked + .switch {
-    background-color: var(--red);
+    background-color: var(--orange);
 }
 
 .switch-input:checked + .switch:after {
@@ -386,7 +386,7 @@ body,input,button,textarea,pre {
 }
 
 .sidebar-link:hover {
-    color: var(--red);
+    color: var(--orange);
 }
 
 .sidebar-list-item {
@@ -396,7 +396,7 @@ body,input,button,textarea,pre {
 }
 
 .sidebar-list-item.active {
-    color: var(--red);
+    color: var(--orange);
     background-color: var(--lightest-gray);
 }
 
@@ -406,7 +406,7 @@ body,input,button,textarea,pre {
 
 .sidebar-list-item.active::before {
     content: "";
-    background-color: var(--red);
+    background-color: var(--orange);
     height: 100%;
     top: 0;
     left: 0;
@@ -508,7 +508,7 @@ body,input,button,textarea,pre {
 .cards .card-single:hover .box {
     transform: translateY(-10px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(45deg, var(--red), orange);
+    background: linear-gradient(45deg, var(--orange), orange);
 }
 
 .cards .card-single .box .on-box {
@@ -600,7 +600,7 @@ tbody tr td {
 }
 
 .btn-control-large{
-    background-color: var(--red);
+    background-color: var(--orange);
     height: 40px;
     color: #fff;
     border-radius: 5px;
@@ -694,7 +694,7 @@ tbody tr td {
 }
 
 .list-current-price {
-    color: var(--red);
+    color: var(--orange);
     font-weight: 500;
 }
 
@@ -737,7 +737,7 @@ tbody tr td {
 }
 
 .btn-delete {
-    background-color: var(--red);
+    background-color: var(--orange);
     color: white;
 }
 
@@ -856,7 +856,7 @@ tbody tr td {
 }
 
 .form-control:focus {
-    border-color: var(--red);
+    border-color: var(--orange);
 }
 
 .form-message {
@@ -867,7 +867,7 @@ tbody tr td {
 
 .form-submit {
     height: 40px;
-    background-color: var(--red);
+    background-color: var(--orange);
     color: #fff;
     padding: 10px 30px;
     border-radius: 5px;
@@ -890,7 +890,7 @@ input[type="file"] {
 }
 
 .form-label-file {
-    background-color: var(--red);
+    background-color: var(--orange);
     color: #fff;
     padding: 8px 40px;
     text-align: center;
@@ -952,11 +952,11 @@ input[type="file"] {
 }
 
 label a {
-    color: var(--red);
+    color: var(--orange);
 }
 
 #btn-add-account{
-    background-color: var(--red);
+    background-color: var(--orange);
     height: 30px;
     color: #fff;
     border-radius: 5px;
@@ -988,7 +988,7 @@ label a {
 }
 
 .admin-control-right button:hover {
-    background-color: var(--red);
+    background-color: var(--orange);
     color:#fff
 }
 
@@ -1139,7 +1139,7 @@ label a {
 }
 
 .order-product-current-price {
-    color: var(--red);
+    color: var(--orange);
     font-weight: 500;
 }
 
@@ -1183,7 +1183,7 @@ label a {
 }
 
 .detail-order-item i {
-    color: var(--red);
+    color: var(--orange);
     margin-right: 5px;
 }
 
@@ -1206,7 +1206,7 @@ label a {
 }
 
 .price-total .price {
-    color: var(--red);
+    color: var(--orange);
     font-weight: 500;
     font-size: 16px;
 }
@@ -1239,7 +1239,7 @@ label a {
 }
 
 .btn-chuaxuly {
-    background-color: var(--red);
+    background-color: var(--orange);
 }
 
 .btn-chuaxuly::before {
@@ -1291,9 +1291,9 @@ label a {
 
 .page-nav-item.active a,
 .page-nav-item a:hover {
-    background-color: var(--red);
+    background-color: var(--orange);
     color: #fff;
-    border: 2px solid var(--red);
+    border: 2px solid var(--orange);
 }
 
 /* order-statistical */
@@ -1316,7 +1316,7 @@ label a {
 .order-statistical-item-icon i{
     font-size: 45px;
     margin-right: 25px;
-    color: var(--red);
+    color: var(--orange);
 }
 
 .order-statistical-item-content-desc{

@@ -1,11 +1,11 @@
 :root {
-    --red: #B5292F;
+    --orange: #fd8166;
     --lightest-gray: rgb(249, 249, 249);
 }
 
 .page-title {
     color: var(--lightest-gray);
-    background-color: var(--red);
+    background-color: var(--orange);
     text-align: center;
     border-radius: 2rem;
     padding: 0.5rem;
