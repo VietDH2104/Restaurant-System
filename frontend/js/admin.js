@@ -320,45 +320,137 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
 });
 
 let btnAddProductIn = document.getElementById("add-product-button");
+// btnAddProductIn.addEventListener("click", async (e) => {
+//     e.preventDefault();
+
+//     const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+//     const price = document.querySelector(".modal.add-product #gia-moi").value;
+//     const moTa = document.querySelector(".modal.add-product #mo-ta").value;
+//     const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+
+//     if(tenMon == "" || price == "" || categoryText == "") {
+//         toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
+//         return;
+//     }
+//     if(isNaN(parseFloat(price))) {
+//         toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//         return;
+//     }
+
+//     const formData = new FormData();
+//     formData.append('title', tenMon);
+//     formData.append('price', parseFloat(price));
+//     formData.append('description', moTa);
+//     formData.append('category', categoryText);
+//     formData.append('status', 1);
+
+//     if (uploadedFile) {
+//         formData.append('imageFile', uploadedFile);
+//     }
+
+//     try {
+//         await ApiService.createProduct(formData);
+//         toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
+//         setDefaultProductFormValue();
+//         document.querySelector(".modal.add-product").classList.remove("open");
+//         adminCurrentPage = 1;
+//         await showProduct();
+//     } catch (error) {
+//         console.error("Error adding product:", error);
+//         toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
+//     }
+// });
+
+// btnAddProductIn.addEventListener("click", async (e) => {
+//   e.preventDefault();
+
+//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+//   const price = document.querySelector(".modal.add-product #gia-moi").value;
+//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
+//   const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+
+//   if(!tenMon || !price || !categoryText) {
+//     toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
+//     return;
+//   }
+//   if(isNaN(parseFloat(price))) {
+//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//     return;
+//   }
+
+//   const formData = new FormData();
+//   formData.append('title', tenMon);
+//   formData.append('price', parseFloat(price));
+//   formData.append('description', moTa);
+//   formData.append('category', categoryText);
+//   formData.append('status', '1');
+
+//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
+//   if (fileInput.files.length > 0) {
+//     formData.append('imageFile', fileInput.files[0]);
+//   }
+
+//   try {
+//     await ApiService.createProduct(formData);
+//     toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
+//     setDefaultProductFormValue();
+//     document.querySelector(".modal.add-product").classList.remove("open");
+//     adminCurrentPage = 1;
+//     await showProduct();
+//   } catch (error) {
+//     console.error("Error adding product:", error);
+//     toast({ 
+//       title: "Lỗi", 
+//       message: error.data?.message || "Thêm sản phẩm thất bại.", 
+//       type: "error" 
+//     });
+//   }
+// });
+
 btnAddProductIn.addEventListener("click", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-    const price = document.querySelector(".modal.add-product #gia-moi").value;
-    const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-    const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+  const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+  const price = document.querySelector(".modal.add-product #gia-moi").value;
+  const moTa = document.querySelector(".modal.add-product #mo-ta").value;
+  const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+  const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
 
-    if(tenMon == "" || price == "" || categoryText == "") {
-        toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
-        return;
-    }
-    if(isNaN(parseFloat(price))) {
-        toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-        return;
-    }
+  if(!tenMon || !price || !categoryText) {
+    toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
+    return;
+  }
+  if(isNaN(parseFloat(price))) {
+    toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append('title', tenMon);
-    formData.append('price', parseFloat(price));
-    formData.append('description', moTa);
-    formData.append('category', categoryText);
-    formData.append('status', 1);
+  const formData = new FormData();
+  formData.append('title', tenMon);
+  formData.append('price', parseFloat(price));
+  formData.append('description', moTa);
+  formData.append('category', categoryText);
+  formData.append('status', '1');
 
-    if (uploadedFile) {
-        formData.append('imageFile', uploadedFile);
-    }
+  if (fileInput.files.length > 0) {
+    formData.append('imageFile', fileInput.files[0]);
+  }
 
-    try {
-        await ApiService.createProduct(formData);
-        toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
-        setDefaultProductFormValue();
-        document.querySelector(".modal.add-product").classList.remove("open");
-        adminCurrentPage = 1;
-        await showProduct();
-    } catch (error) {
-        console.error("Error adding product:", error);
-        toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
-    }
+  try {
+    await ApiService.createProduct(formData);
+    toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
+    setDefaultProductFormValue();
+    document.querySelector(".modal.add-product").classList.remove("open");
+    adminCurrentPage = 1;
+    await showProduct();
+  } catch (error) {
+    console.error("Error adding product:", error);
+    toast({ 
+      title: "Lỗi", 
+      message: error.data?.message || "Thêm sản phẩm thất bại.", 
+      type: "error" 
+    });
+  }
 });
 
 const productModalCloseButton = document.querySelector(".modal.add-product .modal-close.product-form");

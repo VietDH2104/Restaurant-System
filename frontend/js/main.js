@@ -134,82 +134,270 @@ function animationCart() {
 }
 
 // Them SP vao gio hang
-function addCart(productId, productPrice, productTitle, productImg) {
-    let currentUserInfo = ApiService.getCurrentUser();
-    if (!currentUserInfo) {
-        toast({ title: 'Warning', message: 'Vui lòng đăng nhập để thêm vào giỏ hàng!', type: 'warning', duration: 3000 });
-        return;
+// function addCart(productId, productPrice, productTitle, productImg) {
+//     let currentUserInfo = ApiService.getCurrentUser();
+//     if (!currentUserInfo) {
+//         toast({ title: 'Warning', message: 'Vui lòng đăng nhập để thêm vào giỏ hàng!', type: 'warning', duration: 3000 });
+//         return;
+//     }
+
+//     let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
+
+//     let soluong = document.querySelector('.product-detail .input-qty').value;
+//     let popupDetailNote = document.querySelector('#popup-detail-note').value;
+//     let note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+
+//     let productInCart = {
+//         id: productId,
+//         price: productPrice,
+//         title: productTitle,
+//         img_url: productImg,
+//         soluong: parseInt(soluong),
+//         note: note
+//     }
+
+//     let vitri = cart.findIndex(item => item.id == productInCart.id && item.note == productInCart.note);
+//     if (vitri == -1) {
+//         cart.push(productInCart);
+//     } else {
+//         cart[vitri].soluong = parseInt(cart[vitri].soluong) + parseInt(productInCart.soluong);
+//     }
+//     localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+//     updateAmount();
+//     closeModal();
+//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+// }
+
+// async function addCart(productId, productPrice, productTitle, productImg) {
+//   try {
+//     const soluong = document.querySelector('.product-detail .input-qty').value;
+//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
+//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+
+//     await ApiService.addToCart({
+//       product_id: productId,
+//       quantity: parseInt(soluong),
+//       price: productPrice,
+//       title: productTitle,
+//       img_url: productImg,
+//       note
+//     });
+
+//     updateAmount();
+//     closeModal();
+//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+//   } catch (error) {
+//     console.error("Error adding to cart:", error);
+//     toast({ title: 'Error', message: error.data?.message || 'Lỗi thêm vào giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+// async function addCart(productId, productPrice, productTitle, productImg) {
+//   try {
+//     const soluong = document.querySelector('.product-detail .input-qty').value;
+//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
+//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+
+//     await ApiService.addToCart({
+//       product_id: productId,
+//       quantity: parseInt(soluong),
+//       price: productPrice,
+//       title: productTitle,
+//       img_url: productImg,
+//       note
+//     });
+
+//     updateAmount();
+//     closeModal();
+//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+//   } catch (error) {
+//     console.error("Error adding to cart:", error);
+//     toast({ title: 'Error', message: error.data?.message || 'Lỗi thêm vào giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+// async function addCart(productId, productPrice, productTitle, productImg) {
+//   try {
+//     const soluong = document.querySelector('.product-detail .input-qty').value;
+//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
+//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+
+//     await ApiService.addToCart({
+//       product_id: productId,
+//       quantity: parseInt(soluong),
+//       price: productPrice,
+//       title: productTitle,
+//       img_url: productImg,
+//       note
+//     });
+
+//     updateAmount();
+//     closeModal();
+//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+//   } catch (error) {
+//     console.error("Error adding to cart:", error);
+//     toast({ 
+//       title: 'Error', 
+//       message: error.data?.message || 'Lỗi thêm vào giỏ hàng', 
+//       type: 'error', 
+//       duration: 3000 
+//     });
+//   }
+// }
+
+// async function addCart(productId, productPrice, productTitle, productImg) {
+//   try {
+//     const soluong = document.querySelector('.product-detail .input-qty').value;
+//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
+//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+
+//     const response = await ApiService.addToCart({
+//       product_id: productId,
+//       quantity: parseInt(soluong),
+//       price: productPrice,
+//       title: productTitle,
+//       img_url: productImg,
+//       note
+//     });
+
+//     updateAmount();
+//     closeModal();
+//     toast({ 
+//       title: 'Success', 
+//       message: 'Thêm thành công sản phẩm vào giỏ hàng', 
+//       type: 'success', 
+//       duration: 3000 
+//     });
+//   } catch (error) {
+//     console.error("Error adding to cart:", error);
+//     toast({ 
+//       title: 'Error', 
+//       message: error.data?.message || 'Lỗi thêm vào giỏ hàng', 
+//       type: 'error', 
+//       duration: 3000 
+//     });
+//   }
+// }
+
+async function addCart(productId, productPrice, productTitle, productImg) {
+    try {
+        const soluong = document.querySelector('.product-detail .input-qty').value;
+        const popupDetailNote = document.querySelector('#popup-detail-note').value;
+        const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+
+        const response = await ApiService.addToCart({
+            product_id: productId,
+            quantity: parseInt(soluong),
+            price: productPrice,
+            title: productTitle,
+            img_url: productImg,
+            note
+        });
+        console.log("addToCart response:", response);
+
+        await updateAmount();
+        await updateCartTotal();
+        closeModal();
+        toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast({ title: 'Error', message: error.data?.message || 'Lỗi thêm vào giỏ hàng', type: 'error', duration: 3000 });
     }
-
-    let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
-
-    let soluong = document.querySelector('.product-detail .input-qty').value;
-    let popupDetailNote = document.querySelector('#popup-detail-note').value;
-    let note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
-
-    let productInCart = {
-        id: productId,
-        price: productPrice,
-        title: productTitle,
-        img_url: productImg,
-        soluong: parseInt(soluong),
-        note: note
-    }
-
-    let vitri = cart.findIndex(item => item.id == productInCart.id && item.note == productInCart.note);
-    if (vitri == -1) {
-        cart.push(productInCart);
-    } else {
-        cart[vitri].soluong = parseInt(cart[vitri].soluong) + parseInt(productInCart.soluong);
-    }
-    localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
-    updateAmount();
-    closeModal();
-    toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
 }
 
 //Show gio hang
-function showCart() {
-    const currentUserInfo = ApiService.getCurrentUser();
-    if (currentUserInfo) {
-        const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
-        if (cart.length !== 0) {
-            document.querySelector('.gio-hang-trong').style.display = 'none';
-            document.querySelector('button.thanh-toan').classList.remove('disabled');
-            let productcarthtml = '';
-            cart.forEach(item => {
-                productcarthtml += `<li class="cart-item" data-id="${item.id}" data-note="${item.note}">
-                <div class="cart-item-info">
-                    <p class="cart-item-title">
-                        ${item.title}
-                    </p>
-                    <span class="cart-item-price price" data-price="${item.price}">
-                    ${vnd(parseInt(item.price))}
-                    </span>
-                </div>
-                <p class="product-note"><i class="fa-light fa-pencil"></i><span>${item.note}</span></p>
-                <div class="cart-item-control">
-                    <button class="cart-item-delete" onclick="deleteCartItem(${item.id},'${item.note}',this)">Xóa</button>
-                    <div class="buttons_added">
-                        <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this); updateCartItemQuantity(${item.id},'${item.note}', this)">
-                        <input class="input-qty" max="100" min="1" name="" type="number" value="${item.soluong}" onchange="updateCartItemQuantity(${item.id},'${item.note}', this)">
-                        <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this); updateCartItemQuantity(${item.id},'${item.note}', this)">
-                    </div>
-                </div>
-            </li>`
-            });
-            document.querySelector('.cart-list').innerHTML = productcarthtml;
-            updateCartTotal();
-        } else {
-            document.querySelector('.cart-list').innerHTML = '';
-            document.querySelector('.gio-hang-trong').style.display = 'flex';
-            document.querySelector('button.thanh-toan').classList.add('disabled');
-        }
+// function showCart() {
+//     const currentUserInfo = ApiService.getCurrentUser();
+//     if (currentUserInfo) {
+//         const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
+//         if (cart.length !== 0) {
+//             document.querySelector('.gio-hang-trong').style.display = 'none';
+//             document.querySelector('button.thanh-toan').classList.remove('disabled');
+//             let productcarthtml = '';
+//             cart.forEach(item => {
+//                 productcarthtml += `<li class="cart-item" data-id="${item.id}" data-note="${item.note}">
+//                 <div class="cart-item-info">
+//                     <p class="cart-item-title">
+//                         ${item.title}
+//                     </p>
+//                     <span class="cart-item-price price" data-price="${item.price}">
+//                     ${vnd(parseInt(item.price))}
+//                     </span>
+//                 </div>
+//                 <p class="product-note"><i class="fa-light fa-pencil"></i><span>${item.note}</span></p>
+//                 <div class="cart-item-control">
+//                     <button class="cart-item-delete" onclick="deleteCartItem(${item.id},'${item.note}',this)">Xóa</button>
+//                     <div class="buttons_added">
+//                         <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this); updateCartItemQuantity(${item.id},'${item.note}', this)">
+//                         <input class="input-qty" max="100" min="1" name="" type="number" value="${item.soluong}" onchange="updateCartItemQuantity(${item.id},'${item.note}', this)">
+//                         <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this); updateCartItemQuantity(${item.id},'${item.note}', this)">
+//                     </div>
+//                 </div>
+//             </li>`
+//             });
+//             document.querySelector('.cart-list').innerHTML = productcarthtml;
+//             updateCartTotal();
+//         } else {
+//             document.querySelector('.cart-list').innerHTML = '';
+//             document.querySelector('.gio-hang-trong').style.display = 'flex';
+//             document.querySelector('button.thanh-toan').classList.add('disabled');
+//         }
+//     } else {
+//         document.querySelector('.cart-list').innerHTML = '';
+//         document.querySelector('.gio-hang-trong').style.display = 'flex';
+//         document.querySelector('button.thanh-toan').classList.add('disabled');
+//     }
+//     let modalCart = document.querySelector('.modal-cart');
+//     let containerCart = document.querySelector('.cart-container');
+//     let themmon = document.querySelector('.them-mon');
+//     modalCart.onclick = function () {
+//         closeCart();
+//     }
+//     themmon.onclick = function () {
+//         closeCart();
+//     }
+//     containerCart.addEventListener('click', (e) => {
+//         e.stopPropagation();
+//     })
+// }
+
+async function showCart() {
+  try {
+    const cart = await ApiService.fetchCart();
+    
+    if (cart.length !== 0) {
+      document.querySelector('.gio-hang-trong').style.display = 'none';
+      document.querySelector('button.thanh-toan').classList.remove('disabled');
+      
+      let productcarthtml = '';
+      cart.forEach(item => {
+        productcarthtml += `<li class="cart-item" data-id="${item.id}" data-note="${item.note}">
+          <div class="cart-item-info">
+            <p class="cart-item-title">${item.title}</p>
+            <span class="cart-item-price price" data-price="${item.price}">
+              ${vnd(parseInt(item.price))}
+            </span>
+          </div>
+          <p class="product-note"><i class="fa-light fa-pencil"></i><span>${item.note}</span></p>
+          <div class="cart-item-control">
+            <button class="cart-item-delete" onclick="deleteCartItem(${item.id})">Xóa</button>
+            <div class="buttons_added">
+              <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this); updateCartItemQuantity(${item.id}, this)">
+              <input class="input-qty" max="100" min="1" name="" type="number" value="${item.quantity}" onchange="updateCartItemQuantity(${item.id}, this)">
+              <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this); updateCartItemQuantity(${item.id}, this)">
+            </div>
+          </div>
+        </li>`;
+      });
+      document.querySelector('.cart-list').innerHTML = productcarthtml;
+      updateCartTotal();
     } else {
-         document.querySelector('.cart-list').innerHTML = '';
-        document.querySelector('.gio-hang-trong').style.display = 'flex';
-        document.querySelector('button.thanh-toan').classList.add('disabled');
+      document.querySelector('.cart-list').innerHTML = '';
+      document.querySelector('.gio-hang-trong').style.display = 'flex';
+      document.querySelector('button.thanh-toan').classList.add('disabled');
     }
+    
+    // Rest of your showCart logic...
     let modalCart = document.querySelector('.modal-cart');
     let containerCart = document.querySelector('.cart-container');
     let themmon = document.querySelector('.them-mon');
@@ -222,60 +410,278 @@ function showCart() {
     containerCart.addEventListener('click', (e) => {
         e.stopPropagation();
     })
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    toast({ title: 'Error', message: 'Lỗi tải giỏ hàng', type: 'error', duration: 3000 });
+  }
 }
 
-function updateCartItemQuantity(productId, productNote, element) {
-    const currentUserInfo = ApiService.getCurrentUser();
-    if (!currentUserInfo) return;
+// function updateCartItemQuantity(productId, productNote, element) {
+//     const currentUserInfo = ApiService.getCurrentUser();
+//     if (!currentUserInfo) return;
 
-    let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
-    const itemIndex = cart.findIndex(item => item.id == productId && item.note == productNote);
+//     let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
+//     const itemIndex = cart.findIndex(item => item.id == productId && item.note == productNote);
 
-    if (itemIndex > -1) {
-        const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
-        cart[itemIndex].soluong = parseInt(qtyInput.value);
-        if (cart[itemIndex].soluong <= 0) {
-            cart.splice(itemIndex, 1);
-            showCart();
-        } else {
-            localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
-        }
+//     if (itemIndex > -1) {
+//         const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+//         cart[itemIndex].soluong = parseInt(qtyInput.value);
+//         if (cart[itemIndex].soluong <= 0) {
+//             cart.splice(itemIndex, 1);
+//             showCart();
+//         } else {
+//             localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+//         }
+//     }
+//     updateCartTotal();
+//     updateAmount();
+// }
+
+// async function updateCartItemQuantity(itemId, element) {
+//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+//   const quantity = parseInt(qtyInput.value);
+  
+//   try {
+//     if (quantity <= 0) {
+//       await deleteCartItem(itemId);
+//     } else {
+//       await ApiService.updateCartItem(itemId, quantity);
+//     }
+//     updateCartTotal();
+//     updateAmount();
+//   } catch (error) {
+//     console.error("Error updating cart item:", error);
+//     toast({ title: 'Error', message: 'Lỗi cập nhật giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+// async function updateCartItemQuantity(itemId, element) {
+//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+//   const quantity = parseInt(qtyInput.value);
+  
+//   try {
+//     if (quantity <= 0) {
+//       await deleteCartItem(itemId);
+//     } else {
+//       await ApiService.updateCartItem(itemId, quantity);
+//     }
+//     updateCartTotal();
+//     updateAmount();
+//   } catch (error) {
+//     console.error("Error updating cart item:", error);
+//     toast({ title: 'Error', message: 'Lỗi cập nhật giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+// async function updateCartItemQuantity(itemId, element) {
+//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+//   const quantity = parseInt(qtyInput.value);
+  
+//   try {
+//     if (quantity <= 0) {
+//       await deleteCartItem(itemId);
+//     } else {
+//       await ApiService.updateCartItem(itemId, quantity);
+//     }
+//     updateCartTotal();
+//     updateAmount();
+//   } catch (error) {
+//     console.error("Error updating cart item:", error);
+//     toast({ 
+//       title: 'Error', 
+//       message: 'Lỗi cập nhật giỏ hàng', 
+//       type: 'error', 
+//       duration: 3000 
+//     });
+//   }
+// }
+
+async function updateCartItemQuantity(itemId, element) {
+  const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+  const quantity = parseInt(qtyInput.value);
+  
+  try {
+    if (quantity <= 0) {
+      await deleteCartItem(itemId);
+    } else {
+      await ApiService.updateCartItem(itemId, quantity);
+      updateCartTotal();
+      updateAmount();
     }
-    updateCartTotal();
-    updateAmount();
+  } catch (error) {
+    console.error("Error updating cart item:", error);
+    toast({ 
+      title: 'Error', 
+      message: 'Lỗi cập nhật giỏ hàng', 
+      type: 'error', 
+      duration: 3000 
+    });
+    // Reset to previous value on error
+    const item = await ApiService.fetchCart().then(cart => cart.find(i => i.id == itemId));
+    if (item) qtyInput.value = item.quantity;
+  }
 }
-
 
 // Delete cart item
-function deleteCartItem(productId, productNote, el) {
-    const currentUserInfo = ApiService.getCurrentUser();
-    if (!currentUserInfo) return;
+// function deleteCartItem(productId, productNote, el) {
+//     const currentUserInfo = ApiService.getCurrentUser();
+//     if (!currentUserInfo) return;
 
-    let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
-    const itemIndex = cart.findIndex(item => item.id == productId && item.note == productNote);
+//     let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
+//     const itemIndex = cart.findIndex(item => item.id == productId && item.note == productNote);
 
-    if (itemIndex > -1) {
-        cart.splice(itemIndex, 1);
-        localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+//     if (itemIndex > -1) {
+//         cart.splice(itemIndex, 1);
+//         localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+//     }
+
+//     if (el) {
+//         let cartParent = el.parentNode.parentNode;
+//         cartParent.remove();
+//     }
+
+//     if (cart.length == 0) {
+//         document.querySelector('.gio-hang-trong').style.display = 'flex';
+//         document.querySelector('button.thanh-toan').classList.add('disabled');
+//     }
+//     updateCartTotal();
+//     updateAmount();
+// }
+
+// async function deleteCartItem(itemId) {
+//   try {
+//     await ApiService.removeCartItem(itemId);
+//     const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
+//     if (itemElement) itemElement.remove();
+    
+//     const cart = await ApiService.fetchCart();
+//     if (cart.length === 0) {
+//       document.querySelector('.gio-hang-trong').style.display = 'flex';
+//       document.querySelector('button.thanh-toan').classList.add('disabled');
+//     }
+    
+//     updateCartTotal();
+//     updateAmount();
+//   } catch (error) {
+//     console.error("Error deleting cart item:", error);
+//     toast({ title: 'Error', message: 'Lỗi xóa khỏi giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+// async function deleteCartItem(itemId) {
+//   try {
+//     await ApiService.removeCartItem(itemId);
+//     const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
+//     if (itemElement) itemElement.remove();
+    
+//     const cart = await ApiService.fetchCart();
+//     if (cart.length === 0) {
+//       document.querySelector('.gio-hang-trong').style.display = 'flex';
+//       document.querySelector('button.thanh-toan').classList.add('disabled');
+//     }
+    
+//     updateCartTotal();
+//     updateAmount();
+//   } catch (error) {
+//     console.error("Error deleting cart item:", error);
+//     toast({ title: 'Error', message: 'Lỗi xóa khỏi giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+// async function deleteCartItem(itemId) {
+//   try {
+//     await ApiService.removeCartItem(itemId);
+//     const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
+//     if (itemElement) itemElement.remove();
+    
+//     const cart = await ApiService.fetchCart();
+//     if (cart.length === 0) {
+//       document.querySelector('.gio-hang-trong').style.display = 'flex';
+//       document.querySelector('button.thanh-toan').classList.add('disabled');
+//     }
+    
+//     updateCartTotal();
+//     updateAmount();
+//   } catch (error) {
+//     console.error("Error deleting cart item:", error);
+//     toast({ 
+//       title: 'Error', 
+//       message: 'Lỗi xóa khỏi giỏ hàng', 
+//       type: 'error', 
+//       duration: 3000 
+//     });
+//   }
+// }
+
+async function deleteCartItem(itemId) {
+  try {
+    await ApiService.removeCartItem(itemId);
+    const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
+    if (itemElement) itemElement.remove();
+    
+    const cart = await ApiService.fetchCart();
+    if (cart.length === 0) {
+      document.querySelector('.gio-hang-trong').style.display = 'flex';
+      document.querySelector('button.thanh-toan').classList.add('disabled');
     }
-
-    if (el) {
-        let cartParent = el.parentNode.parentNode;
-        cartParent.remove();
-    }
-
-    if (cart.length == 0) {
-        document.querySelector('.gio-hang-trong').style.display = 'flex';
-        document.querySelector('button.thanh-toan').classList.add('disabled');
-    }
+    
     updateCartTotal();
     updateAmount();
+  } catch (error) {
+    console.error("Error deleting cart item:", error);
+    toast({ 
+      title: 'Error', 
+      message: 'Lỗi xóa khỏi giỏ hàng', 
+      type: 'error', 
+      duration: 3000 
+    });
+  }
 }
 
-
 //Update cart total
-function updateCartTotal() {
-    document.querySelector('.text-price').innerText = vnd(getCartTotal());
+// function updateCartTotal() {
+//     document.querySelector('.text-price').innerText = vnd(getCartTotal());
+// }
+
+// async function updateCartTotal() {
+//   try {
+//     const total = await ApiService.getCartTotal();
+//     document.querySelector('.text-price').innerText = vnd(total || 0);
+//   } catch (error) {
+//     console.error("Error getting cart total:", error);
+//     document.querySelector('.text-price').innerText = vnd(0);
+//   }
+// }
+
+// async function updateCartTotal() {
+//   try {
+//     const total = await ApiService.getCartTotal();
+//     document.querySelector('.text-price').innerText = vnd(total || 0);
+//   } catch (error) {
+//     console.error("Error getting cart total:", error);
+//     document.querySelector('.text-price').innerText = vnd(0);
+//   }
+// }
+
+// async function updateCartTotal() {
+//   try {
+//     const total = await ApiService.getCartTotal();
+//     document.querySelector('.text-price').innerText = vnd(total || 0);
+//   } catch (error) {
+//     console.error("Error getting cart total:", error);
+//     document.querySelector('.text-price').innerText = vnd(0);
+//   }
+// }
+
+async function updateCartTotal() {
+    try {
+        const total = await ApiService.getCartTotal();
+        console.log("Cart total:", total);
+        document.querySelector('.text-price').innerText = vnd(total || 0);
+    } catch (error) {
+        console.error("Error getting cart total:", error);
+        document.querySelector('.text-price').innerText = vnd(0);
+    }
 }
 
 // Lay tong tien don hang
@@ -316,15 +722,72 @@ function getAmountCart() {
 }
 
 //Update Amount Cart
-function updateAmount() {
+// function updateAmount() {
+//     if (ApiService.isUserLoggedIn()) {
+//         let amount = getAmountCart();
+//         document.querySelector('.count-product-cart').innerText = amount;
+//     } else {
+//         document.querySelector('.count-product-cart').innerText = 0;
+//     }
+// }
+
+// async function updateAmount() {
+//   if (ApiService.isUserLoggedIn()) {
+//     try {
+//       const count = await ApiService.getCartItemCount();
+//       document.querySelector('.count-product-cart').innerText = count || 0;
+//     } catch (error) {
+//       console.error("Error getting cart count:", error);
+//       document.querySelector('.count-product-cart').innerText = 0;
+//     }
+//   } else {
+//     document.querySelector('.count-product-cart').innerText = 0;
+//   }
+// }
+
+// async function updateAmount() {
+//   if (ApiService.isUserLoggedIn()) {
+//     try {
+//       const count = await ApiService.getCartItemCount();
+//       document.querySelector('.count-product-cart').innerText = count || 0;
+//     } catch (error) {
+//       console.error("Error getting cart count:", error);
+//       document.querySelector('.count-product-cart').innerText = 0;
+//     }
+//   } else {
+//     document.querySelector('.count-product-cart').innerText = 0;
+//   }
+// }
+
+// async function updateAmount() {
+//   if (ApiService.isUserLoggedIn()) {
+//     try {
+//       const count = await ApiService.getCartItemCount();
+//       document.querySelector('.count-product-cart').innerText = count || 0;
+//     } catch (error) {
+//       console.error("Error getting cart count:", error);
+//       document.querySelector('.count-product-cart').innerText = 0;
+//     }
+//   } else {
+//     document.querySelector('.count-product-cart').innerText = 0;
+//   }
+// }
+
+async function updateAmount() {
     if (ApiService.isUserLoggedIn()) {
-        let amount = getAmountCart();
-        document.querySelector('.count-product-cart').innerText = amount;
+        try {
+            const count = await ApiService.getCartItemCount();
+            console.log("Cart item count:", count);
+            document.querySelector('.count-product-cart').innerText = count || 0;
+        } catch (error) {
+            console.error("Error getting cart count:", error);
+            document.querySelector('.count-product-cart').innerText = 0;
+        }
     } else {
+        console.log("User not logged in, setting cart count to 0");
         document.querySelector('.count-product-cart').innerText = 0;
     }
 }
-
 
 // Open & Close Cart
 function openCart() {

@@ -167,6 +167,34 @@
         fetchAdminSalesReport: async function(params = {}) {
             const queryParams = new URLSearchParams(params).toString();
             return request(`/admin/sales-report?${queryParams}`, 'GET', null, true);
+        },
+        // Add these methods to the ApiService object
+        fetchCart: async function() {
+        return request('/cart', 'GET', null, true);
+        },
+
+        addToCart: async function(itemData) {
+        return request('/cart', 'POST', itemData, true);
+        },
+
+        updateCartItem: async function(itemId, quantity) {
+        return request(`/cart/${itemId}`, 'PUT', { quantity }, true);
+        },
+
+        removeCartItem: async function(itemId) {
+        return request(`/cart/${itemId}`, 'DELETE', null, true);
+        },
+
+        clearCart: async function() {
+        return request('/cart', 'DELETE', null, true);
+        },
+
+        getCartTotal: async function() {
+        return request('/cart/total', 'GET', null, true);
+        },
+
+        getCartItemCount: async function() {
+        return request('/cart/count', 'GET', null, true);
         }
     };
 })();
