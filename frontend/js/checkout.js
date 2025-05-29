@@ -69,7 +69,7 @@ async function thanhtoanpage(option, productDetails) { // productDetails for "bu
     let itemCount = 0;
 
     if (option === 1) { // Truong hop thanh toan san pham trong gio
-        const cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUser.id}`)) || [];
+        const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUser.id}`)) || [];
         if (cart.length === 0) {
             toast({title: "Giỏ hàng trống", message: "Vui lòng thêm sản phẩm vào giỏ hàng.", type: "warning"});
             closecheckout();
@@ -205,7 +205,7 @@ nutthanhtoan.addEventListener('click', () => {
         return;
     }
     const currentUserInfo = ApiService.getCurrentUser();
-    const cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+    const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
     if (cart.length === 0) {
         toast({ title: 'Giỏ hàng trống', message: 'Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.', type: 'info' });
         return;
@@ -361,7 +361,7 @@ async function xulyDathang(itemsToOrder, subtotal) {
         toast({ title: 'Thành công', message: `Đặt hàng thành công! Mã đơn hàng: ${createdOrder.orderId}`, type: 'success', duration: 4000 });
 
         if (currentUser && currentUser.id) {
-             localStorage.removeItem(`vyFoodUserCart_${currentUser.id}`);
+             localStorage.removeItem(`UserCart_${currentUser.id}`);
              if (typeof updateAmount === 'function') updateAmount();
         }
 

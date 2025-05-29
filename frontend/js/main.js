@@ -141,7 +141,7 @@ function addCart(productId, productPrice, productTitle, productImg) {
         return;
     }
 
-    let cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+    let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
 
     let soluong = document.querySelector('.product-detail .input-qty').value;
     let popupDetailNote = document.querySelector('#popup-detail-note').value;
@@ -162,7 +162,7 @@ function addCart(productId, productPrice, productTitle, productImg) {
     } else {
         cart[vitri].soluong = parseInt(cart[vitri].soluong) + parseInt(productInCart.soluong);
     }
-    localStorage.setItem(`vyFoodUserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+    localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
     updateAmount();
     closeModal();
     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
@@ -172,7 +172,7 @@ function addCart(productId, productPrice, productTitle, productImg) {
 function showCart() {
     const currentUserInfo = ApiService.getCurrentUser();
     if (currentUserInfo) {
-        const cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+        const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
         if (cart.length !== 0) {
             document.querySelector('.gio-hang-trong').style.display = 'none';
             document.querySelector('button.thanh-toan').classList.remove('disabled');
@@ -228,7 +228,7 @@ function updateCartItemQuantity(productId, productNote, element) {
     const currentUserInfo = ApiService.getCurrentUser();
     if (!currentUserInfo) return;
 
-    let cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+    let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
     const itemIndex = cart.findIndex(item => item.id == productId && item.note == productNote);
 
     if (itemIndex > -1) {
@@ -238,7 +238,7 @@ function updateCartItemQuantity(productId, productNote, element) {
             cart.splice(itemIndex, 1);
             showCart();
         } else {
-            localStorage.setItem(`vyFoodUserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+            localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
         }
     }
     updateCartTotal();
@@ -251,12 +251,12 @@ function deleteCartItem(productId, productNote, el) {
     const currentUserInfo = ApiService.getCurrentUser();
     if (!currentUserInfo) return;
 
-    let cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+    let cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
     const itemIndex = cart.findIndex(item => item.id == productId && item.note == productNote);
 
     if (itemIndex > -1) {
         cart.splice(itemIndex, 1);
-        localStorage.setItem(`vyFoodUserCart_${currentUserInfo.id}`, JSON.stringify(cart));
+        localStorage.setItem(`UserCart_${currentUserInfo.id}`, JSON.stringify(cart));
     }
 
     if (el) {
@@ -282,7 +282,7 @@ function updateCartTotal() {
 function getCartTotal() {
     const currentUserInfo = ApiService.getCurrentUser();
     if (!currentUserInfo) return 0;
-    const cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+    const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
 
     let tongtien = 0;
     cart.forEach(item => {
@@ -306,7 +306,7 @@ async function getProductInfoForCart(productId) {
 function getAmountCart() {
     const currentUserInfo = ApiService.getCurrentUser();
     if (!currentUserInfo) return 0;
-    const cart = JSON.parse(localStorage.getItem(`vyFoodUserCart_${currentUserInfo.id}`)) || [];
+    const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
 
     let amount = 0;
     cart.forEach(element => {
@@ -559,7 +559,7 @@ function kiemtradangnhap() {
 function logOut() {
     const currentUserInfo = ApiService.getCurrentUser();
     if (currentUserInfo) {
-        localStorage.removeItem(`vyFoodUserCart_${currentUserInfo.id}`);
+        localStorage.removeItem(`UserCart_${currentUserInfo.id}`);
     }
     ApiService.logoutUser();
     toast({ title: 'Thông báo', message: 'Đã đăng xuất tài khoản.', type: 'info', duration: 2000 });

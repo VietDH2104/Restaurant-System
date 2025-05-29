@@ -4,7 +4,7 @@
     const API_BASE_URL = 'http://localhost:5000/api';
 
     function getToken() {
-        return localStorage.getItem('vyFoodUserToken');
+        return localStorage.getItem('UserToken');
     }
 
     async function request(endpoint, method = 'GET', data = null, requiresAuth = false, isFormData = false) {
@@ -59,8 +59,8 @@
         loginUser: async function(credentials) {
             const data = await request('/auth/login', 'POST', credentials);
             if (data.token && data.id && data.fullname && data.phone && data.userType !== undefined) {
-                localStorage.setItem('vyFoodUserToken', data.token);
-                localStorage.setItem('vyFoodUserInfo', JSON.stringify({
+                localStorage.setItem('UserToken', data.token);
+                localStorage.setItem('UserInfo', JSON.stringify({
                     id: data.id,
                     fullname: data.fullname,
                     phone: data.phone,
@@ -74,8 +74,8 @@
         registerUser: async function(userData) {
             const data = await request('/auth/register', 'POST', userData);
             if (data.token && data.id && data.fullname && data.phone && data.userType !== undefined) {
-                localStorage.setItem('vyFoodUserToken', data.token);
-                localStorage.setItem('vyFoodUserInfo', JSON.stringify({
+                localStorage.setItem('UserToken', data.token);
+                localStorage.setItem('UserInfo', JSON.stringify({
                     id: data.id,
                     fullname: data.fullname,
                     phone: data.phone,
@@ -85,11 +85,11 @@
             return data;
         },
         logoutUser: function() {
-            localStorage.removeItem('vyFoodUserToken');
-            localStorage.removeItem('vyFoodUserInfo');
+            localStorage.removeItem('UserToken');
+            localStorage.removeItem('UserInfo');
         },
         getCurrentUser: function() {
-            const userInfo = localStorage.getItem('vyFoodUserInfo');
+            const userInfo = localStorage.getItem('UserInfo');
             return userInfo ? JSON.parse(userInfo) : null;
         },
         isUserLoggedIn: function() {
