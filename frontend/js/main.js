@@ -437,23 +437,23 @@ async function showCart() {
 //     updateAmount();
 // }
 
-// async function updateCartItemQuantity(itemId, element) {
-//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
-//   const quantity = parseInt(qtyInput.value);
+async function updateCartItemQuantity(itemId, element) {
+  const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+  const quantity = parseInt(qtyInput.value);
   
-//   try {
-//     if (quantity <= 0) {
-//       await deleteCartItem(itemId);
-//     } else {
-//       await ApiService.updateCartItem(itemId, quantity);
-//     }
-//     updateCartTotal();
-//     updateAmount();
-//   } catch (error) {
-//     console.error("Error updating cart item:", error);
-//     toast({ title: 'Error', message: 'Lỗi cập nhật giỏ hàng', type: 'error', duration: 3000 });
-//   }
-// }
+  try {
+    if (quantity <= 0) {
+      await deleteCartItem(itemId);
+    } else {
+      await ApiService.updateCartItem(itemId, quantity);
+    }
+    updateCartTotal();
+    updateAmount();
+  } catch (error) {
+    console.error("Error updating cart item:", error);
+    toast({ title: 'Error', message: 'Lỗi cập nhật giỏ hàng', type: 'error', duration: 3000 });
+  }
+}
 
 // async function updateCartItemQuantity(itemId, element) {
 //   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
@@ -496,31 +496,31 @@ async function showCart() {
 //   }
 // }
 
-async function updateCartItemQuantity(itemId, element) {
-  const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
-  const quantity = parseInt(qtyInput.value);
+// async function updateCartItemQuantity(itemId, element) {
+//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+//   const quantity = parseInt(qtyInput.value);
   
-  try {
-    if (quantity <= 0) {
-      await deleteCartItem(itemId);
-    } else {
-      await ApiService.updateCartItem(itemId, quantity);
-      updateCartTotal();
-      updateAmount();
-    }
-  } catch (error) {
-    console.error("Error updating cart item:", error);
-    toast({ 
-      title: 'Error', 
-      message: 'Lỗi cập nhật giỏ hàng', 
-      type: 'error', 
-      duration: 3000 
-    });
-    // Reset to previous value on error
-    const item = await ApiService.fetchCart().then(cart => cart.find(i => i.id == itemId));
-    if (item) qtyInput.value = item.quantity;
-  }
-}
+//   try {
+//     if (quantity <= 0) {
+//       await deleteCartItem(itemId);
+//     } else {
+//       await ApiService.updateCartItem(itemId, quantity);
+//       updateCartTotal();
+//       updateAmount();
+//     }
+//   } catch (error) {
+//     console.error("Error updating cart item:", error);
+//     toast({ 
+//       title: 'Error', 
+//       message: 'Lỗi cập nhật giỏ hàng', 
+//       type: 'error', 
+//       duration: 3000 
+//     });
+//     // Reset to previous value on error
+//     const item = await ApiService.fetchCart().then(cart => cart.find(i => i.id == itemId));
+//     if (item) qtyInput.value = item.quantity;
+//   }
+// }
 
 // Delete cart item
 // function deleteCartItem(productId, productNote, el) {
@@ -643,46 +643,46 @@ async function deleteCartItem(itemId) {
 //     document.querySelector('.text-price').innerText = vnd(getCartTotal());
 // }
 
-// async function updateCartTotal() {
-//   try {
-//     const total = await ApiService.getCartTotal();
-//     document.querySelector('.text-price').innerText = vnd(total || 0);
-//   } catch (error) {
-//     console.error("Error getting cart total:", error);
-//     document.querySelector('.text-price').innerText = vnd(0);
-//   }
-// }
-
-// async function updateCartTotal() {
-//   try {
-//     const total = await ApiService.getCartTotal();
-//     document.querySelector('.text-price').innerText = vnd(total || 0);
-//   } catch (error) {
-//     console.error("Error getting cart total:", error);
-//     document.querySelector('.text-price').innerText = vnd(0);
-//   }
-// }
-
-// async function updateCartTotal() {
-//   try {
-//     const total = await ApiService.getCartTotal();
-//     document.querySelector('.text-price').innerText = vnd(total || 0);
-//   } catch (error) {
-//     console.error("Error getting cart total:", error);
-//     document.querySelector('.text-price').innerText = vnd(0);
-//   }
-// }
-
 async function updateCartTotal() {
-    try {
-        const total = await ApiService.getCartTotal();
-        console.log("Cart total:", total);
-        document.querySelector('.text-price').innerText = vnd(total || 0);
-    } catch (error) {
-        console.error("Error getting cart total:", error);
-        document.querySelector('.text-price').innerText = vnd(0);
-    }
+  try {
+    const total = await ApiService.getCartTotal();
+    document.querySelector('.text-price').innerText = vnd(total || 0);
+  } catch (error) {
+    console.error("Error getting cart total:", error);
+    document.querySelector('.text-price').innerText = vnd(0);
+  }
 }
+
+// async function updateCartTotal() {
+//   try {
+//     const total = await ApiService.getCartTotal();
+//     document.querySelector('.text-price').innerText = vnd(total || 0);
+//   } catch (error) {
+//     console.error("Error getting cart total:", error);
+//     document.querySelector('.text-price').innerText = vnd(0);
+//   }
+// }
+
+// async function updateCartTotal() {
+//   try {
+//     const total = await ApiService.getCartTotal();
+//     document.querySelector('.text-price').innerText = vnd(total || 0);
+//   } catch (error) {
+//     console.error("Error getting cart total:", error);
+//     document.querySelector('.text-price').innerText = vnd(0);
+//   }
+// }
+
+// async function updateCartTotal() {
+//     try {
+//         const total = await ApiService.getCartTotal();
+//         console.log("Cart total:", total);
+//         document.querySelector('.text-price').innerText = vnd(total || 0);
+//     } catch (error) {
+//         console.error("Error getting cart total:", error);
+//         document.querySelector('.text-price').innerText = vnd(0);
+//     }
+// }
 
 // Lay tong tien don hang
 function getCartTotal() {
@@ -722,72 +722,73 @@ function getAmountCart() {
 }
 
 //Update Amount Cart
-// function updateAmount() {
-//     if (ApiService.isUserLoggedIn()) {
-//         let amount = getAmountCart();
-//         document.querySelector('.count-product-cart').innerText = amount;
-//     } else {
-//         document.querySelector('.count-product-cart').innerText = 0;
-//     }
-// }
-
-// async function updateAmount() {
-//   if (ApiService.isUserLoggedIn()) {
-//     try {
-//       const count = await ApiService.getCartItemCount();
-//       document.querySelector('.count-product-cart').innerText = count || 0;
-//     } catch (error) {
-//       console.error("Error getting cart count:", error);
-//       document.querySelector('.count-product-cart').innerText = 0;
-//     }
-//   } else {
-//     document.querySelector('.count-product-cart').innerText = 0;
-//   }
-// }
-
-// async function updateAmount() {
-//   if (ApiService.isUserLoggedIn()) {
-//     try {
-//       const count = await ApiService.getCartItemCount();
-//       document.querySelector('.count-product-cart').innerText = count || 0;
-//     } catch (error) {
-//       console.error("Error getting cart count:", error);
-//       document.querySelector('.count-product-cart').innerText = 0;
-//     }
-//   } else {
-//     document.querySelector('.count-product-cart').innerText = 0;
-//   }
-// }
-
-// async function updateAmount() {
-//   if (ApiService.isUserLoggedIn()) {
-//     try {
-//       const count = await ApiService.getCartItemCount();
-//       document.querySelector('.count-product-cart').innerText = count || 0;
-//     } catch (error) {
-//       console.error("Error getting cart count:", error);
-//       document.querySelector('.count-product-cart').innerText = 0;
-//     }
-//   } else {
-//     document.querySelector('.count-product-cart').innerText = 0;
-//   }
-// }
-
-async function updateAmount() {
+function updateAmount() {
     if (ApiService.isUserLoggedIn()) {
-        try {
-            const count = await ApiService.getCartItemCount();
-            console.log("Cart item count:", count);
-            document.querySelector('.count-product-cart').innerText = count || 0;
-        } catch (error) {
-            console.error("Error getting cart count:", error);
-            document.querySelector('.count-product-cart').innerText = 0;
-        }
+        let amount = getAmountCart();
+        document.querySelector('.count-product-cart').innerText = amount;
     } else {
-        console.log("User not logged in, setting cart count to 0");
         document.querySelector('.count-product-cart').innerText = 0;
     }
 }
+
+// async function updateAmount() {
+//   if (ApiService.isUserLoggedIn()) {
+//     try {
+//       const count = await ApiService.getCartItemCount();
+//       document.querySelector('.count-product-cart').innerText = count || 0;
+//     } catch (error) {
+//       console.error("Error getting cart count:", error);
+//       document.querySelector('.count-product-cart').innerText = 0;
+//     }
+//   } else {
+//     document.querySelector('.count-product-cart').innerText = 0;
+//   }
+// }
+
+// async function updateAmount() {
+//   if (ApiService.isUserLoggedIn()) {
+//     try {
+//       const count = await ApiService.getCartItemCount();
+//       document.querySelector('.count-product-cart').innerText = count || 0;
+//     } catch (error) {
+//       console.error("Error getting cart count:", error);
+//       document.querySelector('.count-product-cart').innerText = 0;
+//     }
+//   } else {
+//     document.querySelector('.count-product-cart').innerText = 0;
+//   }
+// }
+
+// async function updateAmount() {
+//   if (ApiService.isUserLoggedIn()) {
+//     try {
+//       const count = await ApiService.getCartItemCount();
+//       document.querySelector('.count-product-cart').innerText = count || 0;
+//     } catch (error) {
+//       console.error("Error getting cart count:", error);
+//       document.querySelector('.count-product-cart').innerText = 0;
+//     }
+//   } else {
+//     document.querySelector('.count-product-cart').innerText = 0;
+//   }
+// }
+
+// async function updateAmount() {
+//     if (ApiService.isUserLoggedIn()) {
+//         try {
+//             const count = await ApiService.getCartItemCount();
+//             console.log("Cart item count:", count);
+//             document.querySelector('.count-product-cart').innerText = count || 0;
+//             await updateCartTotal();
+//         } catch (error) {
+//             console.error("Error getting cart count:", error);
+//             document.querySelector('.count-product-cart').innerText = 0;
+//         }
+//     } else {
+//         console.log("User not logged in, setting cart count to 0");
+//         document.querySelector('.count-product-cart').innerText = 0;
+//     }
+// }
 
 // Open & Close Cart
 function openCart() {
