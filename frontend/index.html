@@ -49,33 +49,23 @@
         </div>
 
         <!-- Search -->
-        <!-- <div class="header-middle-center">
+        <div class="header-middle-center">
             <form action="" class="form-search">
               <span class="search-btn"
                 ><i class="fa-light fa-magnifying-glass"></i
               ></span>
               <input
                 type="text"
+                id="search-input"
                 class="form-search-input"
                 placeholder="Tìm kiếm món ăn..."
-                oninput="searchProducts()"
+                oninput="debouncedSearchProducts()"
               />
               <button class="filter-btn">
                 <i class="fa-light fa-filter-list"></i><span>Lọc</span>
               </button>
             </form>
-          </div> -->
-
-        <div class="header-middle-center">
-          <form action="" class="form-search" onsubmit="event.preventDefault(); searchProducts();">
-            <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
-            <input type="text" class="form-search-input" placeholder="Tìm kiếm món ăn..." />
-            <button class="filter-btn" type="button">
-              <i class="fa-light fa-filter-list"></i><span>Lọc</span>
-            </button>
-          </form>
-        </div>
-
+          </div>
 
         <!-- Account and Cart -->
         <div class="header-middle-right">
@@ -175,6 +165,7 @@
             type="number"
             placeholder="tối thiểu"
             id="min-price"
+            min="0"
             onchange="searchProducts()"
           />
           <span>đến</span>
@@ -182,6 +173,7 @@
             type="number"
             placeholder="tối đa"
             id="max-price"
+            min="0"
             onchange="searchProducts()"
           />
           <button id="advanced-search-price-btn">
@@ -204,48 +196,6 @@
         </div>
       </div>
     </div>
-
-  <!-- <div class="advanced-search">
-    <div class="container">
-      <div class="advanced-search-category">
-        <span>Phân loại </span>
-        <select name="" id="advanced-search-category-select" onchange="searchProducts()">
-          <option>Tất cả</option>
-          <option>Món chay</option>
-          <option>Món mặn</option>
-          <option>Món lẩu</option>
-          <option>Món ăn vặt</option>
-          <option>Món tráng miệng</option>
-          <option>Nước uống</option>
-        </select>
-      </div>
-      <div class="advanced-search-price">
-        <span>Giá từ</span>
-        <input type="number" placeholder="tối thiểu" id="min-price" min="0" onchange="searchProducts()" />
-        <span class="error-message min-price-error"></span>
-        <span>đến</span>
-        <input type="number" placeholder="tối đa" id="max-price" min="0" onchange="searchProducts()" />
-        <span class="error-message max-price-error"></span>
-        <button id="advanced-search-price-btn" onclick="searchProducts()">
-          <i class="fa-light fa-magnifying-glass-dollar"></i>
-        </button>
-      </div>
-      <div class="advanced-search-control">
-        <button id="sort-ascending" onclick="searchProducts(1)">
-          <i class="fa-regular fa-arrow-up-short-wide"></i>
-        </button>
-        <button id="sort-descending" onclick="searchProducts(2)">
-          <i class="fa-regular fa-arrow-down-wide-short"></i>
-        </button>
-        <button id="reset-search" onclick="searchProducts(0)">
-          <i class="fa-light fa-arrow-rotate-right"></i>
-        </button>
-        <button onclick="closeSearchAdvanced()">
-          <i class="fa-light fa-xmark"></i>
-        </button>
-      </div>
-    </div>
-  </div> -->
 
   <main class="main-wrapper">
     <div class="container" id="trangchu">

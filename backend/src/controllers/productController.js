@@ -23,6 +23,7 @@ const fs = require('fs');
 exports.getAllProducts = async (req, res) => {
   try {
     const { category, search, minPrice, maxPrice, sortBy, page = 1, limit = 12 } = req.query;
+    console.log('Query params:', { category, search, minPrice, maxPrice, sortBy, page, limit }); // Debug log
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const filters = {
@@ -36,6 +37,8 @@ exports.getAllProducts = async (req, res) => {
         offset
     };
     const { products, total } = await Product.findAll(filters);
+    console.log('Products found:', products.length, 'Total:', total); // Debug log
+    
     res.json({
         data: products,
         pagination: {

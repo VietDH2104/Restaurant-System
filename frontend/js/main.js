@@ -1284,29 +1284,294 @@ async function renderProducts(showProduct) {
     document.getElementById('home-products').innerHTML = productHtml;
 }
 
-async function searchProducts(sortOption) {
-    let valeSearchInput = document.querySelector('.form-search-input').value;
-    let valueCategory = document.getElementById("advanced-search-category-select").value;
-    let minPrice = document.getElementById("min-price").value;
-    let maxPrice = document.getElementById("max-price").value;
+// async function searchProducts(sortOption) {
+//     let valeSearchInput = document.querySelector('.form-search-input').value;
+//     let valueCategory = document.getElementById("advanced-search-category-select").value;
+//     let minPrice = document.getElementById("min-price").value;
+//     let maxPrice = document.getElementById("max-price").value;
 
-    if (minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice)) {
-        toast({title: "Lỗi", message: "Giá tối thiểu không thể lớn hơn giá tối đa.", type: "error"});
+//     if (minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice)) {
+//         toast({title: "Lỗi", message: "Giá tối thiểu không thể lớn hơn giá tối đa.", type: "error"});
+//         return;
+//     }
+
+//     let params = {
+//         search: valeSearchInput || undefined,
+//         category: valueCategory === "Tất cả" ? undefined : valueCategory,
+//         minPrice: minPrice || undefined,
+//         maxPrice: maxPrice || undefined,
+//         page: 1,
+//         limit: perPage
+//     };
+
+//     if (sortOption === 1) params.sortBy = 'price_asc';
+//     if (sortOption === 2) params.sortBy = 'price_desc';
+//     if (sortOption === 0) {
+//         document.querySelector('.form-search-input').value = "";
+//         document.getElementById("advanced-search-category-select").value = "Tất cả";
+//         document.getElementById("min-price").value = "";
+//         document.getElementById("max-price").value = "";
+//         params = { page: 1, limit: perPage };
+//     }
+
+//     currentPage = 1;
+//     await fetchAndDisplayProducts(params);
+//     document.getElementById("home-service").scrollIntoView({behavior: 'smooth'});
+// }
+
+// async function searchProducts(sortOption) {
+//     let valeSearchInput = document.querySelector('.form-search-input').value.trim();
+//     let valueCategory = document.getElementById("advanced-search-category-select").value;
+//     let minPrice = document.getElementById("min-price").value;
+//     let maxPrice = document.getElementById("max-price").value;
+
+//     // Validate price inputs
+//     if (minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice)) {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối thiểu không thể lớn hơn giá tối đa.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     // Prepare parameters
+//     let params = {
+//         search: valeSearchInput || undefined,
+//         category: valueCategory === "Tất cả" ? undefined : valueCategory,
+//         minPrice: minPrice ? parseFloat(minPrice) : undefined,
+//         maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+//         page: 1,
+//         limit: perPage
+//     };
+
+//     if (sortOption === 1) params.sortBy = 'price_asc';
+//     else if (sortOption === 2) params.sortBy = 'price_desc';
+//     else if (sortOption === 0) {
+//         // Reset filters
+//         document.querySelector('.form-search-input').value = "";
+//         document.getElementById("advanced-search-category-select").value = "Tất cả";
+//         document.getElementById("min-price").value = "";
+//         document.getElementById("max-price").value = "";
+//         params = { page: 1, limit: perPage };
+//     }
+
+//     currentPage = 1;
+//     try {
+//         await fetchAndDisplayProducts(params);
+//         document.getElementById("home-service").scrollIntoView({ behavior: 'smooth' });
+//     } catch (error) {
+//         console.error("Search error:", error);
+//         toast({
+//             title: 'Error',
+//             message: 'Không thể tìm kiếm sản phẩm. Vui lòng thử lại.',
+//             type: 'error',
+//             duration: 3000
+//         });
+//     }
+// }
+
+// async function searchProducts(sortOption) {
+//     let valeSearchInput = document.querySelector('.form-search-input').value.trim();
+//     let valueCategory = document.getElementById("advanced-search-category-select").value;
+//     let minPrice = document.getElementById("min-price").value.trim();
+//     let maxPrice = document.getElementById("max-price").value.trim();
+
+//     // Validate price inputs
+//     let minPriceNum = minPrice ? parseFloat(minPrice) : NaN;
+//     let maxPriceNum = maxPrice ? parseFloat(maxPrice) : NaN;
+
+//     if (!isNaN(minPriceNum) && !isNaN(maxPriceNum) && minPriceNum > maxPriceNum) {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối thiểu không thể lớn hơn giá tối đa.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     if (isNaN(minPriceNum) && minPrice !== "") {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối thiểu không hợp lệ.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     if (isNaN(maxPriceNum) && maxPrice !== "") {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối đa không hợp lệ.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     // Prepare parameters
+//     let params = {
+//         search: valeSearchInput || undefined,
+//         category: valueCategory === "Tất cả" ? undefined : valueCategory,
+//         minPrice: isNaN(minPriceNum) ? undefined : minPriceNum,
+//         maxPrice: isNaN(maxPriceNum) ? undefined : maxPriceNum,
+//         page: 1,
+//         limit: perPage
+//     };
+
+//     if (sortOption === 1) params.sortBy = 'price_asc';
+//     else if (sortOption === 2) params.sortBy = 'price_desc';
+//     else if (sortOption === 0) {
+//         // Reset filters
+//         document.querySelector('.form-search-input').value = "";
+//         document.getElementById("advanced-search-category-select").value = "Tất cả";
+//         document.getElementById("min-price").value = "";
+//         document.getElementById("max-price").value = "";
+//         params = { page: 1, limit: perPage };
+//     }
+
+//     currentPage = 1;
+//     try {
+//         await fetchAndDisplayProducts(params);
+//         document.getElementById("home-service").scrollIntoView({ behavior: 'smooth' });
+//     } catch (error) {
+//         console.error("Search error:", error);
+//         toast({
+//             title: 'Error',
+//             message: 'Không thể tìm kiếm sản phẩm. Vui lòng thử lại.',
+//             type: 'error',
+//             duration: 3000
+//         });
+//     }
+// }
+
+// async function searchProducts(sortOption) {
+//     let valeSearchInput = document.querySelector('.form-search-input').value.trim();
+//     let valueCategory = document.getElementById("advanced-search-category-select").value;
+//     let minPrice = document.getElementById("min-price").value;
+//     let maxPrice = document.getElementById("max-price").value;
+
+//     // Validate price inputs - convert to numbers or set to undefined if invalid
+//     minPrice = minPrice && !isNaN(minPrice) ? parseFloat(minPrice) : undefined;
+//     maxPrice = maxPrice && !isNaN(maxPrice) ? parseFloat(maxPrice) : undefined;
+
+//     if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối thiểu không thể lớn hơn giá tối đa.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     // Prepare parameters
+//     let params = {
+//         search: valeSearchInput || undefined,
+//         category: valueCategory === "Tất cả" ? undefined : valueCategory,
+//         minPrice: minPrice,
+//         maxPrice: maxPrice,
+//         page: 1,
+//         limit: perPage
+//     };
+
+//     if (sortOption === 1) params.sortBy = 'price_asc';
+//     else if (sortOption === 2) params.sortBy = 'price_desc';
+//     else if (sortOption === 0) {
+//         // Reset filters
+//         document.querySelector('.form-search-input').value = "";
+//         document.getElementById("advanced-search-category-select").value = "Tất cả";
+//         document.getElementById("min-price").value = "";
+//         document.getElementById("max-price").value = "";
+//         params = { page: 1, limit: perPage };
+//     }
+
+//     currentPage = 1;
+//     try {
+//         await fetchAndDisplayProducts(params);
+//         document.getElementById("home-service").scrollIntoView({ behavior: 'smooth' });
+//     } catch (error) {
+//         console.error("Search error:", error);
+//         toast({
+//             title: 'Error',
+//             message: 'Không thể tìm kiếm sản phẩm. Vui lòng thử lại.',
+//             type: 'error',
+//             duration: 3000
+//         });
+//     }
+// }
+
+async function searchProducts(sortOption) {
+    let valeSearchInput = document.querySelector('.form-search-input').value.trim();
+    let valueCategory = document.getElementById("advanced-search-category-select").value.trim();
+    let minPrice = document.getElementById("min-price").value.trim();
+    let maxPrice = document.getElementById("max-price").value.trim();
+
+    // Validate price inputs
+    let minPriceNum = minPrice ? parseFloat(minPrice) : undefined;
+    let maxPriceNum = maxPrice ? parseFloat(maxPrice) : undefined;
+
+    if (minPriceNum !== undefined && maxPriceNum !== undefined && minPriceNum > maxPriceNum) {
+        toast({
+            title: "Lỗi",
+            message: "Giá tối thiểu không thể lớn hơn giá tối đa.",
+            type: "error",
+            duration: 3000
+        });
         return;
     }
 
+    if (minPrice && isNaN(minPriceNum)) {
+        toast({
+            title: "Lỗi",
+            message: "Giá tối thiểu không hợp lệ.",
+            type: "error",
+            duration: 3000
+        });
+        return;
+    }
+
+    if (maxPrice && isNaN(maxPriceNum)) {
+        toast({
+            title: "Lỗi",
+            message: "Giá tối đa không hợp lệ.",
+            type: "error",
+            duration: 3000
+        });
+        return;
+    }
+
+    // Prepare parameters, exclude empty or invalid values
     let params = {
-        search: valeSearchInput || undefined,
-        category: valueCategory === "Tất cả" ? undefined : valueCategory,
-        minPrice: minPrice || undefined,
-        maxPrice: maxPrice || undefined,
         page: 1,
         limit: perPage
     };
 
-    if (sortOption === 1) params.sortBy = 'price_asc';
-    if (sortOption === 2) params.sortBy = 'price_desc';
-    if (sortOption === 0) {
+    if (valeSearchInput) {
+        params.search = valeSearchInput;
+    }
+
+    if (valueCategory && valueCategory !== "Tất cả") {
+        params.category = valueCategory;
+    }
+
+    if (!isNaN(minPriceNum)) {
+        params.minPrice = minPriceNum;
+    }
+
+    if (!isNaN(maxPriceNum)) {
+        params.maxPrice = maxPriceNum;
+    }
+
+    if (sortOption === 1) {
+        params.sortBy = 'price_asc';
+    } else if (sortOption === 2) {
+        params.sortBy = 'price_desc';
+    } else if (sortOption === 0) {
+        // Reset filters
         document.querySelector('.form-search-input').value = "";
         document.getElementById("advanced-search-category-select").value = "Tất cả";
         document.getElementById("min-price").value = "";
@@ -1315,12 +1580,42 @@ async function searchProducts(sortOption) {
     }
 
     currentPage = 1;
-    await fetchAndDisplayProducts(params);
-    document.getElementById("home-service").scrollIntoView({behavior: 'smooth'});
+    console.log('Search params:', params); // Debug log
+
+    try {
+        await fetchAndDisplayProducts(params);
+        document.getElementById("home-service").scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        console.error("Search error:", error);
+        toast({
+            title: 'Error',
+            message: 'Không thể tìm kiếm sản phẩm. Vui lòng thử lại.',
+            type: 'error',
+            duration: 3000
+        });
+    }
 }
 
 let perPage = 12;
 let currentPage = 1;
+
+// async function fetchAndDisplayProducts(params = {}) {
+//     try {
+//         const { data, pagination } = await ApiService.fetchProducts({
+//             limit: perPage,
+//             page: currentPage,
+//             ...params
+//         });
+//         currentProductsCache = data;
+//         renderProducts(data);
+//         setupPagination(pagination.totalItems, perPage, pagination.currentPage, params);
+//     } catch (error) {
+//         console.error("Error fetching products:", error);
+//         toast({ title: 'Error', message: 'Lỗi tải sản phẩm!', type: 'error', duration: 3000 });
+//         document.getElementById('home-products').innerHTML = `<p style="text-align:center;">Không thể tải sản phẩm. Vui lòng thử lại.</p>`;
+//         document.querySelector('.page-nav-list').innerHTML = '';
+//     }
+// }
 
 async function fetchAndDisplayProducts(params = {}) {
     try {
@@ -1329,12 +1624,29 @@ async function fetchAndDisplayProducts(params = {}) {
             page: currentPage,
             ...params
         });
+
         currentProductsCache = data;
-        renderProducts(data);
-        setupPagination(pagination.totalItems, perPage, pagination.currentPage, params);
+        if (data.length === 0) {
+            document.getElementById("home-title").style.display = "none";
+            document.getElementById('home-products').innerHTML = `
+                <div class="no-result">
+                    <div class="no-result-h">Tìm kiếm không có kết quả</div>
+                    <div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div>
+                    <div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div>
+                </div>`;
+            document.querySelector('.page-nav-list').innerHTML = '';
+        } else {
+            await renderProducts(data);
+            setupPagination(pagination.totalItems, perPage, pagination.currentPage, params);
+        }
     } catch (error) {
-        console.error("Error fetching products:", error);
-        toast({ title: 'Error', message: 'Lỗi tải sản phẩm!', type: 'error', duration: 3000 });
+        console.error("Error fetching products:", error, error.data);
+        toast({
+            title: 'Error',
+            message: error.data?.message || 'Lỗi tải sản phẩm. Vui lòng thử lại.',
+            type: 'error',
+            duration: 3000
+        });
         document.getElementById('home-products').innerHTML = `<p style="text-align:center;">Không thể tải sản phẩm. Vui lòng thử lại.</p>`;
         document.querySelector('.page-nav-list').innerHTML = '';
     }
@@ -1364,15 +1676,40 @@ function setupPagination(totalItems, perPage, activePage, currentParams = {}) {
     }
 }
 
+// async function showCategory(category) {
+//     document.getElementById('trangchu').classList.remove('hide');
+//     document.getElementById('account-user').classList.remove('open');
+//     document.getElementById('order-history').classList.remove('open');
+
+//     currentPage = 1;
+//     const params = { category: category === "Tất cả" ? undefined : category, page: currentPage, limit: perPage };
+//     await fetchAndDisplayProducts(params);
+//     document.getElementById("home-title").scrollIntoView({behavior: 'smooth'});
+// }
+
 async function showCategory(category) {
     document.getElementById('trangchu').classList.remove('hide');
     document.getElementById('account-user').classList.remove('open');
     document.getElementById('order-history').classList.remove('open');
 
     currentPage = 1;
-    const params = { category: category === "Tất cả" ? undefined : category, page: currentPage, limit: perPage };
-    await fetchAndDisplayProducts(params);
-    document.getElementById("home-title").scrollIntoView({behavior: 'smooth'});
+    const params = { 
+        category: category === "Tất cả" ? undefined : category.trim(), 
+        page: currentPage, 
+        limit: perPage 
+    };
+    try {
+        await fetchAndDisplayProducts(params);
+        document.getElementById("home-title").scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        console.error("Category filter error:", error);
+        toast({
+            title: 'Error',
+            message: 'Lỗi lọc theo danh mục. Vui lòng thử lại.',
+            type: 'error',
+            duration: 3000
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1380,3 +1717,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAndDisplayProducts({ page: currentPage, limit: perPage });
     updateAmount();
 });
+
+// function debounce(func, wait) {
+//     let timeout;
+//     return function executedFunction(...args) {
+//         const later = () => {
+//             clearTimeout(timeout);
+//             func(...args);
+//         };
+//         clearTimeout(timeout);
+//         timeout = setTimeout(later, wait);
+//     };
+// }
+
+// const debouncedSearchProducts = debounce(searchProducts, 500);
+
+const debouncedSearchProducts = debounce(() => {
+    const searchInput = document.querySelector('.form-search-input').value.trim();
+    if (searchInput || document.getElementById("advanced-search-category-select").value !== "Tất cả" ||
+        document.getElementById("min-price").value || document.getElementById("max-price").value) {
+        searchProducts();
+    }
+}, 500);
