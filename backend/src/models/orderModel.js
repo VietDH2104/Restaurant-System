@@ -145,6 +145,49 @@ const Order = {
 
     const [rows] = await pool.query(sql, params);
     return rows;
+  },
+
+  async findByProductId(productId, filters = {}) {
+    let sql = `
+        SELECT
+            o.id as order_id,
+            o.customer_name,
+            o.customer_phone,
+            o.order_timestamp,
+            o.total_amount,
+            o.status,
+            oi.quantity,
+            oi.price_at_purchase
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        WHERE oi.product_id = ?`;
+    const params = [productId];
+
+    if (filters.status !== undefined && filters.status !== '2' && filters.status !== 2) {
+        sql += ' AND o.status = ?';
+        params.push(parseInt(filters.status));
+    }
+    if (filters.dateStart) {
+        sql += ' AND DATE(o.order_timestamp) >= ?';
+        params.push(filters.dateStart);
+    }
+    if (filters.dateEnd) {
+        sql += ' AND DATE(o.order_timestamp) <= ?';
+        params.push(filters.dateEnd);
+    }
+
+    sql += ' ORDER BY o.order_timestamp DESC';
+    // const [rows] = await pool.query(sql, params);
+    // return rows;
+    console.log('Executing findByProductId query:', sql, 'with params:', params);
+    try {
+        const [rows] = await pool.query(sql, params);
+        console.log('Query result:', rows);
+        return rows;
+    } catch (error) {
+        console.error('Error executing findByProductId query:', error);
+        throw error;
+    }
   }
 };
 

@@ -69,6 +69,7 @@ const User = {
     }
 
     sql += ' ORDER BY join_date DESC';
+    console.log("Executing SQL:", sql, "with params:", params); // Debug: Log SQL query and parameters
     const [rows] = await pool.query(sql, params);
     return rows;
   },

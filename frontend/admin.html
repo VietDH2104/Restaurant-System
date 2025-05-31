@@ -126,6 +126,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Product  -->
             <div class="section product-all">
                 <div class="admin-control">
@@ -158,6 +159,7 @@
                     </ul>
                 </div>
             </div>
+
             <!-- Account  -->
             <div class="section">
                 <div class="admin-control">
@@ -207,6 +209,7 @@
                 </div>
                 <!-- </div> -->
             </div>
+
             <!-- Order  -->
             <div class="section">
                 <div class="admin-control">
@@ -254,6 +257,8 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Thống kê  -->
             <div class="section">
                 <div class="admin-control">
                     <div class="admin-control-left">
@@ -343,12 +348,12 @@
             <h3 class="modal-container-title edit-product-e">CHỈNH SỬA SẢN PHẨM</h3>
             <button class="modal-close product-form"><i class="fa-regular fa-xmark"></i></button>
             <div class="modal-content">
-                <form action="" class="add-product-form">
+                <form action="" class="add-product-form" enctype="multipart/form-data">
                     <div class="modal-content-left">
                         <img src="./assets/img/blank-image.png" alt="" class="upload-image-preview">
                         <div class="form-group file">
                             <label for="up-hinh-anh" class="form-label-file"><i class="fa-regular fa-cloud-arrow-up"></i>Chọn hình ảnh</label>
-                            <input accept="image/jpeg, image/png, image/jpg" id="up-hinh-anh" name="up-hinh-anh" type="file" class="form-control" onchange="uploadImage(this)">
+                            <input accept="image/jpeg, image/png, image/jpg" id="up-hinh-anh" name="imageFile" type="file" class="form-control" onchange="uploadImage(this)">
                         </div>
                     </div>
                     <div class="modal-content-right">
@@ -435,7 +440,7 @@
                 <form action="" class="signup-form">
                     <div class="form-group">
                         <label for="fullname" class="form-label">Tên đầy đủ</label>
-                        <input id="fullname" name="fullname" type="text" placeholder="VD: Nhật Sinh" class="form-control">
+                        <input id="fullname" name="fullname" type="text" placeholder="VD: Hùng Việt" class="form-control">
                         <span class="form-message-name form-message"></span>
                     </div>
                     <div class="form-group">

@@ -152,8 +152,54 @@ const saveProductImage = (file, productId) => {
 };
 
 // Modify createProduct
+// exports.createProduct = async (req, res) => {
+//   try {
+//     const { title, category, price, description, status = 1 } = req.body;
+//     const imageFile = req.files?.imageFile;
+
+//     if (!title || !category || price === undefined) {
+//       return res.status(400).json({ message: 'Tiêu đề, danh mục và giá là bắt buộc.' });
+//     }
+
+//     // First create product to get ID
+//     const productData = { 
+//       title, 
+//       img_url: '', // Temporary empty
+//       category, 
+//       price: parseFloat(price), 
+//       description, 
+//       status 
+//     };
+    
+//     const product = await Product.create(productData);
+    
+//     // Handle image upload
+//     // if (imageFile) {
+//     //   const img_url = saveProductImage(imageFile, product.id);
+//     //   await Product.update(product.id, { img_url });
+//     //   product.img_url = img_url;
+//     // }
+
+//     if (imageFile) {
+//       const img_url = saveProductImage(imageFile, product.id);
+//       const updated = await Product.update(product.id, { img_url });
+//       if (!updated) {
+//         throw new Error('Failed to update product image URL in database');
+//       }
+//       product.img_url = img_url;
+//     }
+
+//     res.status(201).json(product);
+//   } catch (error) {
+//     console.error('Lỗi tạo sản phẩm:', error);
+//     res.status(500).json({ message: 'Lỗi máy chủ khi tạo sản phẩm.', error: error.message });
+//   }
+// };
+
 exports.createProduct = async (req, res) => {
   try {
+    console.log('req.body:', req.body); // Debug log
+    console.log('req.files:', req.files); // Debug log
     const { title, category, price, description, status = 1 } = req.body;
     const imageFile = req.files?.imageFile;
 
@@ -161,7 +207,6 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Tiêu đề, danh mục và giá là bắt buộc.' });
     }
 
-    // First create product to get ID
     const productData = { 
       title, 
       img_url: '', // Temporary empty
@@ -173,10 +218,12 @@ exports.createProduct = async (req, res) => {
     
     const product = await Product.create(productData);
     
-    // Handle image upload
     if (imageFile) {
       const img_url = saveProductImage(imageFile, product.id);
-      await Product.update(product.id, { img_url });
+      const updated = await Product.update(product.id, { img_url });
+      if (!updated) {
+        throw new Error('Failed to update product image URL in database');
+      }
       product.img_url = img_url;
     }
 

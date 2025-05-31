@@ -142,3 +142,22 @@ exports.updateOrderStatusAdmin = async (req, res) => {
     res.status(500).json({ message: 'Lỗi máy chủ khi cập nhật trạng thái đơn hàng.', error: error.message });
   }
 };
+
+exports.getOrdersByProductId = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const { dateStart, dateEnd, status } = req.query;
+
+        // Validate productId
+        const productIdNum = parseInt(productId);
+        if (isNaN(productIdNum) || productIdNum <= 0) {
+            return res.status(400).json({ message: 'ID sản phẩm không hợp lệ.' });
+        }
+
+        const orders = await Order.findByProductId(productId, { dateStart, dateEnd, status });
+        res.json(orders);
+    } catch (error) {
+        console.error('Lỗi lấy đơn hàng theo sản phẩm:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ khi lấy đơn hàng theo sản phẩm.', error: error.message });
+    }
+};

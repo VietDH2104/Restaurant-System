@@ -77,3 +77,27 @@ exports.clearCart = async (req, res) => {
     res.status(500).json({ message: 'Lỗi máy chủ khi xóa giỏ hàng.', error: error.message });
   }
 };
+
+exports.getCartTotal = async (req, res) => {
+  try {
+    console.log('Fetching cart total for user:', req.user.id);
+    const total = await Cart.getCartTotal(req.user.id);
+    console.log('Cart total:', total);
+    res.json(total);
+  } catch (error) {
+    console.error('Lỗi tính tổng giỏ hàng:', error);
+    res.status(500).json({ message: 'Lỗi máy chủ khi tính tổng giỏ hàng.', error: error.message });
+  }
+};
+
+exports.getCartItemCount = async (req, res) => {
+  try {
+    console.log('Fetching cart item count for user:', req.user.id);
+    const count = await Cart.getCartItemCount(req.user.id);
+    console.log('Cart item count:', count);
+    res.json(count);
+  } catch (error) {
+    console.error('Lỗi tính số lượng giỏ hàng:', error);
+    res.status(500).json({ message: 'Lỗi máy chủ khi tính số lượng giỏ hàng.', error: error.message });
+  }
+};

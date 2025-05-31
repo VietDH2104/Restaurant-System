@@ -75,10 +75,32 @@ const Product = {
     return { products, total };
   },
 
+  // async update(id, productData) {
+  //   const { title, img_url, category, price, description, status } = productData;
+  //   const sql = 'UPDATE products SET title = ?, img_url = ?, category = ?, price = ?, description = ?, status = ?, updated_at = NOW() WHERE id = ?';
+  //   const [result] = await pool.query(sql, [title, img_url, category, price, description, status, id]);
+  //   return result.affectedRows > 0;
+  // },
+
   async update(id, productData) {
+    const fields = [];
+    const values = [];
     const { title, img_url, category, price, description, status } = productData;
-    const sql = 'UPDATE products SET title = ?, img_url = ?, category = ?, price = ?, description = ?, status = ?, updated_at = NOW() WHERE id = ?';
-    const [result] = await pool.query(sql, [title, img_url, category, price, description, status, id]);
+
+    if (title !== undefined) { fields.push('title = ?'); values.push(title); }
+    if (img_url !== undefined) { fields.push('img_url = ?'); values.push(img_url); }
+    if (category !== undefined) { fields.push('category = ?'); values.push(category); }
+    if (price !== undefined) { fields.push('price = ?'); values.push(price); }
+    if (description !== undefined) { fields.push('description = ?'); values.push(description); }
+    if (status !== undefined) { fields.push('status = ?'); values.push(status); }
+
+    if (fields.length === 0) return false;
+
+    fields.push('updated_at = NOW()');
+    values.push(id);
+
+    const sql = `UPDATE products SET ${fields.join(', ')} WHERE id = ?`;
+    const [result] = await pool.query(sql, values);
     return result.affectedRows > 0;
   },
 

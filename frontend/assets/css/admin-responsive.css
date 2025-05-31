@@ -87,29 +87,42 @@
 @media only screen and (max-width: 615px) {
     .sidebar {
         overflow: hidden;
-        width: 70%;
+        /* width: 70%; */
+        width: 0;
         flex-direction: column;
         position:fixed;
         background-color: #fff;
         z-index: 99;
         box-shadow: 0 1px 5px 0 rgb(0 0 0 / 20%);
+        transition: width var(--animation-duration) var(--animation-timing-curve);
+        left: 0;
+        top: var(--header-height);
+        height: calc(100vh - var(--header-height));
     }
     
     .sidebar .hidden-sidebar {
-        opacity: 1;
+        /* opacity: 1; */
+        opacity: 0;
         text-align: center;
         line-height: 0rem;
+        transition: opacity var(--animation-duration) var(--animation-timing-curve) 0.1s; /* Slight delay */
     }
     
     .sidebar .channel-logo {
         margin-top: -2rem;
-        width: 100%;
+        /* width: 100%; */
+        width: 0; /* Start with 0 width */
+        transition: width var(--animation-duration) var(--animation-timing-curve);
     }
     
+    .sidebar.open .channel-logo {
+        width: 100%; /* Expand to full width when open */
+    }
     
     .sidebar .channel-logo >img {
         width: 100px;
         height: 100px;
+        transition: transform var(--animation-duration) var(--animation-timing-curve);
     }
     
     .your-channel {
@@ -118,11 +131,23 @@
     
     .sidebar .middle-sidebar {
         margin-top: 5rem;
+        opacity: 0; /* Start hidden */
+        transition: opacity var(--animation-duration) var(--animation-timing-curve) 0.15s; /* Slight delay */
+    }
+
+    .sidebar.open .middle-sidebar {
+        opacity: 1; /* Fade in when open */
     }
     
     .sidebar.open {
-        transition: width var(--animation-duration) var(--animation-timing-curve);
-        display: none;
+        /* transition: width var(--animation-duration) var(--animation-timing-curve);
+        display: none; */
+        width: 70%; /* Expand to 70% when open */
+        display: flex; /* Keep it flex when open */
+    }
+
+    .sidebar.open .hidden-sidebar {
+        opacity: 1; /* Fade in when open */
     }
 
     .profile{
@@ -131,6 +156,28 @@
 
     .add-product.open .upload-image-preview {
         width: 100%;
+    }
+
+    .sidebar:not(.open) .channel-logo >img {
+        transform: scale(0); /* Shrink image when closed */
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 98;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--animation-duration) var(--animation-timing-curve);
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        pointer-events: all;
     }
 }
 

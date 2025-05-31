@@ -109,6 +109,9 @@
         },
         createProduct: async function(formData) {
             return request('/products', 'POST', formData, true, true);
+            if (requiresAuth && !token) {
+                throw new Error('No authentication token found');
+            };
         },
         updateProduct: async function(id, formData) {
             return request(`/products/${id}`, 'PUT', formData, true, true);
@@ -189,12 +192,28 @@
         return request('/cart', 'DELETE', null, true);
         },
 
+        // getCartTotal: async function() {
+        // return request('/cart/total', 'GET', null, true);
+        // },
+
         getCartTotal: async function() {
-        return request('/cart/total', 'GET', null, true);
+            try {
+                const response = await request('/cart/total', 'GET', null, true);
+                console.log("API getCartTotal response:", response); // Debug server response
+                return response;
+            } catch (error) {
+                console.error("API getCartTotal error:", error.message, error.status, error.data);
+                throw error;
+            }
         },
 
         getCartItemCount: async function() {
         return request('/cart/count', 'GET', null, true);
+        },
+
+        fetchOrdersByProductId: async function(productId, params = {}) {
+            const queryParams = new URLSearchParams(params).toString();
+            return request(`/orders/product/${productId}?${queryParams}`, 'GET', null, true);
         }
     };
 })();

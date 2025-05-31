@@ -169,123 +169,38 @@ function animationCart() {
 // }
 
 // async function addCart(productId, productPrice, productTitle, productImg) {
-//   try {
-//     const soluong = document.querySelector('.product-detail .input-qty').value;
-//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
-//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+//     try {
+//         const soluong = document.querySelector('.product-detail .input-qty').value;
+//         const popupDetailNote = document.querySelector('#popup-detail-note').value;
+//         const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
 
-//     await ApiService.addToCart({
-//       product_id: productId,
-//       quantity: parseInt(soluong),
-//       price: productPrice,
-//       title: productTitle,
-//       img_url: productImg,
-//       note
-//     });
+//         const response = await ApiService.addToCart({
+//             product_id: productId,
+//             quantity: parseInt(soluong),
+//             price: productPrice,
+//             title: productTitle,
+//             img_url: productImg,
+//             note
+//         });
+//         console.log("addToCart response:", response);
 
-//     updateAmount();
-//     closeModal();
-//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
-//   } catch (error) {
-//     console.error("Error adding to cart:", error);
-//     toast({ title: 'Error', message: error.data?.message || 'Lỗi thêm vào giỏ hàng', type: 'error', duration: 3000 });
-//   }
-// }
-
-// async function addCart(productId, productPrice, productTitle, productImg) {
-//   try {
-//     const soluong = document.querySelector('.product-detail .input-qty').value;
-//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
-//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
-
-//     await ApiService.addToCart({
-//       product_id: productId,
-//       quantity: parseInt(soluong),
-//       price: productPrice,
-//       title: productTitle,
-//       img_url: productImg,
-//       note
-//     });
-
-//     updateAmount();
-//     closeModal();
-//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
-//   } catch (error) {
-//     console.error("Error adding to cart:", error);
-//     toast({ title: 'Error', message: error.data?.message || 'Lỗi thêm vào giỏ hàng', type: 'error', duration: 3000 });
-//   }
-// }
-
-// async function addCart(productId, productPrice, productTitle, productImg) {
-//   try {
-//     const soluong = document.querySelector('.product-detail .input-qty').value;
-//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
-//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
-
-//     await ApiService.addToCart({
-//       product_id: productId,
-//       quantity: parseInt(soluong),
-//       price: productPrice,
-//       title: productTitle,
-//       img_url: productImg,
-//       note
-//     });
-
-//     updateAmount();
-//     closeModal();
-//     toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
-//   } catch (error) {
-//     console.error("Error adding to cart:", error);
-//     toast({ 
-//       title: 'Error', 
-//       message: error.data?.message || 'Lỗi thêm vào giỏ hàng', 
-//       type: 'error', 
-//       duration: 3000 
-//     });
-//   }
-// }
-
-// async function addCart(productId, productPrice, productTitle, productImg) {
-//   try {
-//     const soluong = document.querySelector('.product-detail .input-qty').value;
-//     const popupDetailNote = document.querySelector('#popup-detail-note').value;
-//     const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
-
-//     const response = await ApiService.addToCart({
-//       product_id: productId,
-//       quantity: parseInt(soluong),
-//       price: productPrice,
-//       title: productTitle,
-//       img_url: productImg,
-//       note
-//     });
-
-//     updateAmount();
-//     closeModal();
-//     toast({ 
-//       title: 'Success', 
-//       message: 'Thêm thành công sản phẩm vào giỏ hàng', 
-//       type: 'success', 
-//       duration: 3000 
-//     });
-//   } catch (error) {
-//     console.error("Error adding to cart:", error);
-//     toast({ 
-//       title: 'Error', 
-//       message: error.data?.message || 'Lỗi thêm vào giỏ hàng', 
-//       type: 'error', 
-//       duration: 3000 
-//     });
-//   }
+//         updateAmount();
+//         updateCartTotal();
+//         closeModal();
+//         toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+//     } catch (error) {
+//         console.error("Error adding to cart:", error);
+//         toast({ title: 'Error', message: error.data?.message || 'Lỗi thêm vào giỏ hàng', type: 'error', duration: 3000 });
+//     }
 // }
 
 async function addCart(productId, productPrice, productTitle, productImg) {
     try {
         const soluong = document.querySelector('.product-detail .input-qty').value;
         const popupDetailNote = document.querySelector('#popup-detail-note').value;
-        const note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+        const note = popupDetailNote === "" ? "Không có ghi chú" : popupDetailNote;
 
-        const response = await ApiService.addToCart({
+        await ApiService.addToCart({
             product_id: productId,
             quantity: parseInt(soluong),
             price: productPrice,
@@ -293,10 +208,9 @@ async function addCart(productId, productPrice, productTitle, productImg) {
             img_url: productImg,
             note
         });
-        console.log("addToCart response:", response);
-
-        await updateAmount();
-        await updateCartTotal();
+        await showCart(); // Refresh cart UI
+        updateAmount();
+        updateCartTotal();
         closeModal();
         toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
     } catch (error) {
@@ -361,59 +275,120 @@ async function addCart(productId, productPrice, productTitle, productImg) {
 //     })
 // }
 
-async function showCart() {
-  try {
-    const cart = await ApiService.fetchCart();
+// async function showCart() {
+//   try {
+//     const cart = await ApiService.fetchCart();
     
-    if (cart.length !== 0) {
-      document.querySelector('.gio-hang-trong').style.display = 'none';
-      document.querySelector('button.thanh-toan').classList.remove('disabled');
+//     if (cart.length !== 0) {
+//       document.querySelector('.gio-hang-trong').style.display = 'none';
+//       document.querySelector('button.thanh-toan').classList.remove('disabled');
       
-      let productcarthtml = '';
-      cart.forEach(item => {
-        productcarthtml += `<li class="cart-item" data-id="${item.id}" data-note="${item.note}">
-          <div class="cart-item-info">
-            <p class="cart-item-title">${item.title}</p>
-            <span class="cart-item-price price" data-price="${item.price}">
-              ${vnd(parseInt(item.price))}
-            </span>
-          </div>
-          <p class="product-note"><i class="fa-light fa-pencil"></i><span>${item.note}</span></p>
-          <div class="cart-item-control">
-            <button class="cart-item-delete" onclick="deleteCartItem(${item.id})">Xóa</button>
-            <div class="buttons_added">
-              <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this); updateCartItemQuantity(${item.id}, this)">
-              <input class="input-qty" max="100" min="1" name="" type="number" value="${item.quantity}" onchange="updateCartItemQuantity(${item.id}, this)">
-              <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this); updateCartItemQuantity(${item.id}, this)">
-            </div>
-          </div>
-        </li>`;
-      });
-      document.querySelector('.cart-list').innerHTML = productcarthtml;
-      updateCartTotal();
-    } else {
-      document.querySelector('.cart-list').innerHTML = '';
-      document.querySelector('.gio-hang-trong').style.display = 'flex';
-      document.querySelector('button.thanh-toan').classList.add('disabled');
-    }
+//       let productcarthtml = '';
+//       cart.forEach(item => {
+//         productcarthtml += `<li class="cart-item" data-id="${item.id}" data-note="${item.note}">
+//           <div class="cart-item-info">
+//             <p class="cart-item-title">${item.title}</p>
+//             <span class="cart-item-price price" data-price="${item.price}">
+//               ${vnd(parseInt(item.price))}
+//             </span>
+//           </div>
+//           <p class="product-note"><i class="fa-light fa-pencil"></i><span>${item.note}</span></p>
+//           <div class="cart-item-control">
+//             <button class="cart-item-delete" onclick="deleteCartItem(${item.id})">Xóa</button>
+//             <div class="buttons_added">
+//               <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this); updateCartItemQuantity(${item.id}, this)">
+//               <input class="input-qty" max="100" min="1" name="" type="number" value="${item.quantity}" onchange="updateCartItemQuantity(${item.id}, this)">
+//               <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this); updateCartItemQuantity(${item.id}, this)">
+//             </div>
+//           </div>
+//         </li>`;
+//       });
+//       document.querySelector('.cart-list').innerHTML = productcarthtml;
+//       updateCartTotal();
+//     } else {
+//       document.querySelector('.cart-list').innerHTML = '';
+//       document.querySelector('.gio-hang-trong').style.display = 'flex';
+//       document.querySelector('button.thanh-toan').classList.add('disabled');
+//     }
     
-    // Rest of your showCart logic...
-    let modalCart = document.querySelector('.modal-cart');
-    let containerCart = document.querySelector('.cart-container');
-    let themmon = document.querySelector('.them-mon');
-    modalCart.onclick = function () {
-        closeCart();
+//     // Rest of your showCart logic...
+//     let modalCart = document.querySelector('.modal-cart');
+//     let containerCart = document.querySelector('.cart-container');
+//     let themmon = document.querySelector('.them-mon');
+//     modalCart.onclick = function () {
+//         closeCart();
+//     }
+//     themmon.onclick = function () {
+//         closeCart();
+//     }
+//     containerCart.addEventListener('click', (e) => {
+//         e.stopPropagation();
+//     })
+//   } catch (error) {
+//     console.error("Error fetching cart:", error);
+//     toast({ title: 'Error', message: 'Lỗi tải giỏ hàng', type: 'error', duration: 3000 });
+//   }
+// }
+
+async function showCart() {
+    try {
+        const cart = await ApiService.fetchCart();
+        if (cart.length !== 0) {
+            document.querySelector('.gio-hang-trong').style.display = 'none';
+            document.querySelector('button.thanh-toan').classList.remove('disabled');
+            let productcarthtml = '';
+            cart.forEach(item => {
+                // Map server fields to client-side fields
+                const mappedItem = {
+                    id: item.id || item.product_id,
+                    title: item.title || item.product_title,
+                    price: item.price || item.price_at_purchase,
+                    quantity: item.quantity || item.quantity_at_purchase,
+                    note: item.note || item.item_notes || 'Không có ghi chú',
+                    img_url: item.img_url || item.product_img_url
+                };
+                productcarthtml += `<li class="cart-item" data-id="${mappedItem.id}" data-note="${mappedItem.note}">
+                    <div class="cart-item-info">
+                        <p class="cart-item-title">${mappedItem.title}</p>
+                        <span class="cart-item-price price" data-price="${mappedItem.price}">
+                            ${vnd(parseInt(mappedItem.price))}
+                        </span>
+                    </div>
+                    <p class="product-note"><i class="fa-light fa-pencil"></i><span>${mappedItem.note}</span></p>
+                    <div class="cart-item-control">
+                        <button class="cart-item-delete" onclick="deleteCartItem(${mappedItem.id})">Xóa</button>
+                        <div class="buttons_added">
+                            <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this); updateCartItemQuantity(${mappedItem.id}, this)">
+                            <input class="input-qty" max="100" min="1" name="" type="number" value="${mappedItem.quantity}" onchange="updateCartItemQuantity(${mappedItem.id}, this)">
+                            <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this); updateCartItemQuantity(${mappedItem.id}, this)">
+                        </div>
+                    </div>
+                </li>`;
+            });
+            document.querySelector('.cart-list').innerHTML = productcarthtml;
+            updateCartTotal();
+        } else {
+            document.querySelector('.cart-list').innerHTML = '';
+            document.querySelector('.gio-hang-trong').style.display = 'flex';
+            document.querySelector('button.thanh-toan').classList.add('disabled');
+        }
+
+        let modalCart = document.querySelector('.modal-cart');
+        let containerCart = document.querySelector('.cart-container');
+        let themmon = document.querySelector('.them-mon');
+        modalCart.onclick = function () {
+            closeCart();
+        };
+        themmon.onclick = function () {
+            closeCart();
+        };
+        containerCart.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    } catch (error) {
+        console.error("Error fetching cart:", error);
+        toast({ title: 'Error', message: 'Lỗi tải giỏ hàng', type: 'error', duration: 3000 });
     }
-    themmon.onclick = function () {
-        closeCart();
-    }
-    containerCart.addEventListener('click', (e) => {
-        e.stopPropagation();
-    })
-  } catch (error) {
-    console.error("Error fetching cart:", error);
-    toast({ title: 'Error', message: 'Lỗi tải giỏ hàng', type: 'error', duration: 3000 });
-  }
 }
 
 // function updateCartItemQuantity(productId, productNote, element) {
@@ -435,65 +410,6 @@ async function showCart() {
 //     }
 //     updateCartTotal();
 //     updateAmount();
-// }
-
-async function updateCartItemQuantity(itemId, element) {
-  const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
-  const quantity = parseInt(qtyInput.value);
-  
-  try {
-    if (quantity <= 0) {
-      await deleteCartItem(itemId);
-    } else {
-      await ApiService.updateCartItem(itemId, quantity);
-    }
-    updateCartTotal();
-    updateAmount();
-  } catch (error) {
-    console.error("Error updating cart item:", error);
-    toast({ title: 'Error', message: 'Lỗi cập nhật giỏ hàng', type: 'error', duration: 3000 });
-  }
-}
-
-// async function updateCartItemQuantity(itemId, element) {
-//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
-//   const quantity = parseInt(qtyInput.value);
-  
-//   try {
-//     if (quantity <= 0) {
-//       await deleteCartItem(itemId);
-//     } else {
-//       await ApiService.updateCartItem(itemId, quantity);
-//     }
-//     updateCartTotal();
-//     updateAmount();
-//   } catch (error) {
-//     console.error("Error updating cart item:", error);
-//     toast({ title: 'Error', message: 'Lỗi cập nhật giỏ hàng', type: 'error', duration: 3000 });
-//   }
-// }
-
-// async function updateCartItemQuantity(itemId, element) {
-//   const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
-//   const quantity = parseInt(qtyInput.value);
-  
-//   try {
-//     if (quantity <= 0) {
-//       await deleteCartItem(itemId);
-//     } else {
-//       await ApiService.updateCartItem(itemId, quantity);
-//     }
-//     updateCartTotal();
-//     updateAmount();
-//   } catch (error) {
-//     console.error("Error updating cart item:", error);
-//     toast({ 
-//       title: 'Error', 
-//       message: 'Lỗi cập nhật giỏ hàng', 
-//       type: 'error', 
-//       duration: 3000 
-//     });
-//   }
 // }
 
 // async function updateCartItemQuantity(itemId, element) {
@@ -521,6 +437,33 @@ async function updateCartItemQuantity(itemId, element) {
 //     if (item) qtyInput.value = item.quantity;
 //   }
 // }
+
+async function updateCartItemQuantity(itemId, element) {
+    const qtyInput = element.closest('.buttons_added').querySelector('.input-qty');
+    const newQuantity = parseInt(qtyInput.value);
+    const previousQuantity = parseInt(qtyInput.dataset.previous || qtyInput.value); // Store previous value
+    qtyInput.dataset.previous = newQuantity; // Update previous value
+
+    try {
+        if (newQuantity <= 0) {
+            await deleteCartItem(itemId);
+        } else {
+            await ApiService.updateCartItem(itemId, newQuantity);
+            await showCart(); // Refresh cart UI
+            updateCartTotal();
+            updateAmount();
+        }
+    } catch (error) {
+        console.error("Error updating cart item:", error);
+        qtyInput.value = previousQuantity; // Revert to previous quantity
+        toast({ 
+            title: 'Error', 
+            message: 'Lỗi cập nhật giỏ hàng', 
+            type: 'error', 
+            duration: 3000 
+        });
+    }
+}
 
 // Delete cart item
 // function deleteCartItem(productId, productNote, el) {
@@ -564,46 +507,6 @@ async function updateCartItemQuantity(itemId, element) {
 //     updateAmount();
 //   } catch (error) {
 //     console.error("Error deleting cart item:", error);
-//     toast({ title: 'Error', message: 'Lỗi xóa khỏi giỏ hàng', type: 'error', duration: 3000 });
-//   }
-// }
-
-// async function deleteCartItem(itemId) {
-//   try {
-//     await ApiService.removeCartItem(itemId);
-//     const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
-//     if (itemElement) itemElement.remove();
-    
-//     const cart = await ApiService.fetchCart();
-//     if (cart.length === 0) {
-//       document.querySelector('.gio-hang-trong').style.display = 'flex';
-//       document.querySelector('button.thanh-toan').classList.add('disabled');
-//     }
-    
-//     updateCartTotal();
-//     updateAmount();
-//   } catch (error) {
-//     console.error("Error deleting cart item:", error);
-//     toast({ title: 'Error', message: 'Lỗi xóa khỏi giỏ hàng', type: 'error', duration: 3000 });
-//   }
-// }
-
-// async function deleteCartItem(itemId) {
-//   try {
-//     await ApiService.removeCartItem(itemId);
-//     const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
-//     if (itemElement) itemElement.remove();
-    
-//     const cart = await ApiService.fetchCart();
-//     if (cart.length === 0) {
-//       document.querySelector('.gio-hang-trong').style.display = 'flex';
-//       document.querySelector('button.thanh-toan').classList.add('disabled');
-//     }
-    
-//     updateCartTotal();
-//     updateAmount();
-//   } catch (error) {
-//     console.error("Error deleting cart item:", error);
 //     toast({ 
 //       title: 'Error', 
 //       message: 'Lỗi xóa khỏi giỏ hàng', 
@@ -614,63 +517,25 @@ async function updateCartItemQuantity(itemId, element) {
 // }
 
 async function deleteCartItem(itemId) {
-  try {
-    await ApiService.removeCartItem(itemId);
-    const itemElement = document.querySelector(`.cart-item[data-id="${itemId}"]`);
-    if (itemElement) itemElement.remove();
-    
-    const cart = await ApiService.fetchCart();
-    if (cart.length === 0) {
-      document.querySelector('.gio-hang-trong').style.display = 'flex';
-      document.querySelector('button.thanh-toan').classList.add('disabled');
+    try {
+        await ApiService.removeCartItem(itemId);
+        await showCart(); // Refresh cart UI
+        updateCartTotal();
+        updateAmount();
+    } catch (error) {
+        console.error("Error deleting cart item:", error);
+        toast({ 
+            title: 'Error', 
+            message: 'Lỗi xóa khỏi giỏ hàng', 
+            type: 'error', 
+            duration: 3000 
+        });
     }
-    
-    updateCartTotal();
-    updateAmount();
-  } catch (error) {
-    console.error("Error deleting cart item:", error);
-    toast({ 
-      title: 'Error', 
-      message: 'Lỗi xóa khỏi giỏ hàng', 
-      type: 'error', 
-      duration: 3000 
-    });
-  }
 }
 
 //Update cart total
 // function updateCartTotal() {
 //     document.querySelector('.text-price').innerText = vnd(getCartTotal());
-// }
-
-async function updateCartTotal() {
-  try {
-    const total = await ApiService.getCartTotal();
-    document.querySelector('.text-price').innerText = vnd(total || 0);
-  } catch (error) {
-    console.error("Error getting cart total:", error);
-    document.querySelector('.text-price').innerText = vnd(0);
-  }
-}
-
-// async function updateCartTotal() {
-//   try {
-//     const total = await ApiService.getCartTotal();
-//     document.querySelector('.text-price').innerText = vnd(total || 0);
-//   } catch (error) {
-//     console.error("Error getting cart total:", error);
-//     document.querySelector('.text-price').innerText = vnd(0);
-//   }
-// }
-
-// async function updateCartTotal() {
-//   try {
-//     const total = await ApiService.getCartTotal();
-//     document.querySelector('.text-price').innerText = vnd(total || 0);
-//   } catch (error) {
-//     console.error("Error getting cart total:", error);
-//     document.querySelector('.text-price').innerText = vnd(0);
-//   }
 // }
 
 // async function updateCartTotal() {
@@ -681,6 +546,49 @@ async function updateCartTotal() {
 //     } catch (error) {
 //         console.error("Error getting cart total:", error);
 //         document.querySelector('.text-price').innerText = vnd(0);
+//     }
+// }
+
+// async function updateCartTotal() {
+//     try {
+//         const total = await ApiService.getCartTotal();
+//         document.querySelector('.text-price').innerText = vnd(total || 0);
+//     } catch (error) {
+//         console.error("Error getting cart total:", error);
+//         document.querySelector('.text-price').innerText = vnd(0);
+//         toast({ title: 'Error', message: 'Lỗi tính tổng giá giỏ hàng', type: 'error', duration: 3000 });
+//     }
+// }
+
+async function updateCartTotal() {
+    try {
+        const response = await ApiService.getCartTotal();
+        console.log("getCartTotal response:", response);
+        const total = typeof response === 'object' && response.total !== undefined ? response.total : response;
+        document.querySelector('.text-price').innerText = vnd(total || 0);
+    } catch (error) {
+        console.error("Error getting cart total:", error, error.data); // Log detailed error
+        document.querySelector('.text-price').innerText = vnd(0);
+        toast({ title: 'Error', message: error.data?.message || 'Lỗi tính tổng giá giỏ hàng', type: 'error', duration: 3000 });
+    }
+}
+
+// async function updateCartTotal() {
+//     try {
+//         const cart = await ApiService.fetchCart();
+//         let total = 0;
+//         if (cart && cart.length > 0) {
+//             total = cart.reduce((sum, item) => {
+//                 const price = parseFloat(item.price || item.price_at_purchase || 0);
+//                 const quantity = parseInt(item.quantity || item.quantity_at_purchase || 0);
+//                 return sum + price * quantity;
+//             }, 0);
+//         }
+//         document.querySelector('.text-price').innerText = vnd(total || 0);
+//     } catch (error) {
+//         console.error("Error calculating cart total:", error, error.data);
+//         document.querySelector('.text-price').innerText = vnd(0);
+//         toast({ title: 'Error', message: error.data?.message || 'Lỗi tính tổng giá giỏ hàng', type: 'error', duration: 3000 });
 //     }
 // }
 
@@ -722,55 +630,13 @@ function getAmountCart() {
 }
 
 //Update Amount Cart
-function updateAmount() {
-    if (ApiService.isUserLoggedIn()) {
-        let amount = getAmountCart();
-        document.querySelector('.count-product-cart').innerText = amount;
-    } else {
-        document.querySelector('.count-product-cart').innerText = 0;
-    }
-}
-
-// async function updateAmount() {
-//   if (ApiService.isUserLoggedIn()) {
-//     try {
-//       const count = await ApiService.getCartItemCount();
-//       document.querySelector('.count-product-cart').innerText = count || 0;
-//     } catch (error) {
-//       console.error("Error getting cart count:", error);
-//       document.querySelector('.count-product-cart').innerText = 0;
+// function updateAmount() {
+//     if (ApiService.isUserLoggedIn()) {
+//         let amount = getAmountCart();
+//         document.querySelector('.count-product-cart').innerText = amount;
+//     } else {
+//         document.querySelector('.count-product-cart').innerText = 0;
 //     }
-//   } else {
-//     document.querySelector('.count-product-cart').innerText = 0;
-//   }
-// }
-
-// async function updateAmount() {
-//   if (ApiService.isUserLoggedIn()) {
-//     try {
-//       const count = await ApiService.getCartItemCount();
-//       document.querySelector('.count-product-cart').innerText = count || 0;
-//     } catch (error) {
-//       console.error("Error getting cart count:", error);
-//       document.querySelector('.count-product-cart').innerText = 0;
-//     }
-//   } else {
-//     document.querySelector('.count-product-cart').innerText = 0;
-//   }
-// }
-
-// async function updateAmount() {
-//   if (ApiService.isUserLoggedIn()) {
-//     try {
-//       const count = await ApiService.getCartItemCount();
-//       document.querySelector('.count-product-cart').innerText = count || 0;
-//     } catch (error) {
-//       console.error("Error getting cart count:", error);
-//       document.querySelector('.count-product-cart').innerText = 0;
-//     }
-//   } else {
-//     document.querySelector('.count-product-cart').innerText = 0;
-//   }
 // }
 
 // async function updateAmount() {
@@ -779,7 +645,6 @@ function updateAmount() {
 //             const count = await ApiService.getCartItemCount();
 //             console.log("Cart item count:", count);
 //             document.querySelector('.count-product-cart').innerText = count || 0;
-//             await updateCartTotal();
 //         } catch (error) {
 //             console.error("Error getting cart count:", error);
 //             document.querySelector('.count-product-cart').innerText = 0;
@@ -789,6 +654,38 @@ function updateAmount() {
 //         document.querySelector('.count-product-cart').innerText = 0;
 //     }
 // }
+
+// async function updateAmount() {
+//     if (ApiService.isUserLoggedIn()) {
+//         try {
+//             const count = await ApiService.getCartItemCount();
+//             document.querySelector('.count-product-cart').innerText = count || 0;
+//         } catch (error) {
+//             console.error("Error getting cart count:", error);
+//             document.querySelector('.count-product-cart').innerText = 0;
+//             toast({ title: 'Error', message: 'Lỗi tính số lượng giỏ hàng', type: 'error', duration: 3000 });
+//         }
+//     } else {
+//         document.querySelector('.count-product-cart').innerText = 0;
+//     }
+// }
+
+async function updateAmount() {
+    if (ApiService.isUserLoggedIn()) {
+        try {
+            const response = await ApiService.getCartItemCount();
+            // Handle both number and object responses
+            const count = typeof response === 'object' && response.count !== undefined ? response.count : response;
+            document.querySelector('.count-product-cart').innerText = count || 0;
+        } catch (error) {
+            console.error("Error getting cart count:", error, error.data);
+            document.querySelector('.count-product-cart').innerText = 0;
+            toast({ title: 'Error', message: error.data?.message || 'Lỗi tính số lượng giỏ hàng', type: 'error', duration: 3000 });
+        }
+    } else {
+        document.querySelector('.count-product-cart').innerText = 0;
+    }
+}
 
 // Open & Close Cart
 function openCart() {
