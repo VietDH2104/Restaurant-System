@@ -325,6 +325,7 @@ async function editProduct(id) {
 let uploadedFile = null;
 function uploadImage(el) {
   if (el.files && el.files[0]) {
+    uploadedFile = el.files[0];
     const reader = new FileReader();
     reader.onload = function (e) {
       const previewImage = document.querySelector(
@@ -386,6 +387,20 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
   formData.append("price", parseFloat(price));
   formData.append("description", description);
   formData.append("category", category);
+  formData.append("status", "1");
+
+  // formData.append("title", tenMon);
+  // formData.append("price", parseFloat(price));
+  // formData.append("description", moTa);
+  // formData.append("category", categoryText);
+  // formData.append("status", "1");
+  if (fileInput.files.length > 0) {
+    formData.append("imageFile", fileInput.files[0]);
+  }
+  console.log('FormData contents:');
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
 
   if (uploadedFile) {
     formData.append("imageFile", uploadedFile);
@@ -559,16 +574,157 @@ let btnAddProductIn = document.getElementById("add-product-button");
 //   }
 // });
 
+// btnAddProductIn.addEventListener("click", async (e) => {
+//   e.preventDefault();
+
+//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+//   const price = document.querySelector(".modal.add-product #gia-moi").value;
+//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
+//   const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
+
+//   if (!tenMon || !price || !categoryText) {
+//     toast({
+//       title: "Chú ý",
+//       message: "Vui lòng nhập tên món, giá và chọn loại món!",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   if (isNaN(parseFloat(price))) {
+//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//     return;
+//   }
+
+//   const formData = new FormData();
+//   formData.append("title", tenMon);
+//   formData.append("price", parseFloat(price));
+//   formData.append("description", moTa);
+//   formData.append("category", categoryText);
+//   formData.append("status", "1");
+
+//   // Use uploadedFile if available, otherwise use fileInput
+//   // if (uploadedFile) {
+//   //   formData.append("imageFile", uploadedFile);
+//   // } else if (fileInput.files.length > 0) {
+//   //   formData.append("imageFile", fileInput.files[0]);
+//   // }
+
+//   if (fileInput.files.length > 0) {
+//     formData.append("imageFile", fileInput.files[0]);
+//   }
+
+//   try {
+//     await ApiService.createProduct(formData);
+//     toast({
+//       title: "Success",
+//       message: "Thêm sản phẩm thành công!",
+//       type: "success",
+//     });
+//     setDefaultProductFormValue();
+//     document.querySelector(".modal.add-product").classList.remove("open");
+//     adminCurrentPage = 1;
+//     await showProduct();
+//   } catch (error) {
+//     console.error("Error adding product:", error);
+//     toast({
+//       title: "Lỗi",
+//       message: error.data?.message || "Thêm sản phẩm thất bại.",
+//       type: "error",
+//     });
+//   }
+// });
+
+// btnAddProductIn.addEventListener("click", async (e) => {
+//   e.preventDefault();
+
+//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+//   const price = document.querySelector(".modal.add-product #gia-moi").value;
+//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
+//   const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
+
+//   if (!tenMon || !price || !categoryText) {
+//     toast({
+//       title: "Chú ý",
+//       message: "Vui lòng nhập tên món, giá và chọn loại món!",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   if (isNaN(parseFloat(price))) {
+//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//     return;
+//   }
+
+//   if (fileInput.files.length > 0) {
+//     const file = fileInput.files[0];
+//     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+//     if (!allowedTypes.includes(file.type)) {
+//       toast({
+//         title: "Chú ý",
+//         message: "Chỉ chấp nhận file ảnh JPEG hoặc PNG!",
+//         type: "warning",
+//       });
+//       return;
+//     }
+//     if (file.size > 5 * 1024 * 1024) {
+//       toast({
+//         title: "Chú ý",
+//         message: "Kích thước file ảnh không được vượt quá 5MB!",
+//         type: "warning",
+//       });
+//       return;
+//     }
+//   }
+
+//   const formData = new FormData();
+//   formData.append("title", tenMon);
+//   formData.append("price", parseFloat(price));
+//   formData.append("description", moTa);
+//   formData.append("category", categoryText);
+//   formData.append("status", "1");
+
+//   if (fileInput.files.length > 0) {
+//     formData.append("imageFile", fileInput.files[0]);
+//   }
+
+//   console.log('FormData contents:');
+//   for (let [key, value] of formData.entries()) {
+//     console.log(key, value);
+//   }
+  
+//   try {
+//     await ApiService.createProduct(formData);
+//     toast({
+//       title: "Success",
+//       message: "Thêm sản phẩm thành công!",
+//       type: "success",
+//     });
+//     setDefaultProductFormValue();
+//     document.querySelector(".modal.add-product").classList.remove("open");
+//     adminCurrentPage = 1;
+//     await showProduct();
+//   } catch (error) {
+//     console.error("Error adding product:", error);
+//     toast({
+//       title: "Lỗi",
+//       message: error.data?.message || "Thêm sản phẩm thất bại.",
+//       type: "error",
+//     });
+//   }
+// });
+
 btnAddProductIn.addEventListener("click", async (e) => {
   e.preventDefault();
 
-  const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
+  const title = document.querySelector(".modal.add-product #ten-mon").value;
   const price = document.querySelector(".modal.add-product #gia-moi").value;
-  const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-  const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+  const description = document.querySelector(".modal.add-product #mo-ta").value;
+  const category = document.querySelector(".modal.add-product #chon-mon").value;
   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
 
-  if (!tenMon || !price || !categoryText) {
+  if (!title || !price || !category) {
     toast({
       title: "Chú ý",
       message: "Vui lòng nhập tên món, giá và chọn loại món!",
@@ -581,20 +737,43 @@ btnAddProductIn.addEventListener("click", async (e) => {
     return;
   }
 
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Chú ý",
+        message: "Chỉ chấp nhận file ảnh JPEG hoặc PNG!",
+        type: "warning",
+      });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Chú ý",
+        message: "Kích thước file ảnh không được vượt quá 5MB!",
+        type: "warning",
+      });
+      return;
+    }
+  }
+
   const formData = new FormData();
-  formData.append("title", tenMon);
+  formData.append("title", title);
   formData.append("price", parseFloat(price));
-  formData.append("description", moTa);
-  formData.append("category", categoryText);
+  formData.append("description", description);
+  formData.append("category", category);
   formData.append("status", "1");
 
-  // Use uploadedFile if available, otherwise use fileInput
-  if (uploadedFile) {
-    formData.append("imageFile", uploadedFile);
-  } else if (fileInput.files.length > 0) {
+  if (fileInput.files.length > 0) {
     formData.append("imageFile", fileInput.files[0]);
   }
 
+  console.log('FormData contents:');
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+  
   try {
     await ApiService.createProduct(formData);
     toast({

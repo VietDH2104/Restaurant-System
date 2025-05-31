@@ -30,6 +30,7 @@ const upload = multer({
     if (extname && mimetype) {
       return cb(null, true);
     } else {
+      console.error('File rejected:', file.originalname, file.mimetype); // Debug log
       cb(new Error('Chỉ chấp nhận file ảnh JPEG hoặc PNG!'));
     }
   },
