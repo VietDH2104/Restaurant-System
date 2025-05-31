@@ -1,4 +1,4 @@
-const { pool } = require('../configs/db'); 
+const { pool } = require('../configs/db');
 
 const Product = {
   async create(productData) {
@@ -11,74 +11,83 @@ const Product = {
   async findById(id) {
     const sql = 'SELECT * FROM products WHERE id = ?';
     const [rows] = await pool.query(sql, [id]);
-    return rows[0]; 
+    return rows[0];
   },
 
   async findAll(filters = {}) {
     let baseSelectSql = 'SELECT * FROM products';
     let countSelectSql = 'SELECT COUNT(*) as total FROM products';
     let whereClauses = [];
-    const queryParams = [];
+    const queryParamsForWhere = [];
 
     if (filters.forCustomerView) {
         whereClauses.push('status = 1');
-    } else if (filters.status !== undefined && filters.status !== 'all' && filters.status !== 2 && filters.status !== '2') {
-       
+    } else if (filters.status !== undefined && !isNaN(filters.status)) {
         whereClauses.push('status = ?');
-        queryParams.push(parseInt(filters.status));
+        queryParamsForWhere.push(filters.status);
     }
-   
-    if (filters.category && filters.category !== 'Tất cả') {
+
+    if (filters.category) {
       whereClauses.push('category = ?');
-      queryParams.push(filters.category);
+      queryParamsForWhere.push(filters.category);
     }
 
     if (filters.search) {
       whereClauses.push('title LIKE ?');
-      queryParams.push(`%${filters.search}%`);
+      queryParamsForWhere.push(`%${filters.search}%`);
     }
 
-    if (filters.minPrice !== undefined) {
+    if (filters.minPrice !== undefined && !isNaN(filters.minPrice)) {
       whereClauses.push('price >= ?');
-      queryParams.push(parseFloat(filters.minPrice));
+      queryParamsForWhere.push(filters.minPrice);
     }
-    if (filters.maxPrice !== undefined) {
+    if (filters.maxPrice !== undefined && !isNaN(filters.maxPrice)) {
       whereClauses.push('price <= ?');
-      queryParams.push(parseFloat(filters.maxPrice));
+      queryParamsForWhere.push(filters.maxPrice);
     }
 
     const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-    baseSelectSql += ` ${whereCondition}`;
+    
     countSelectSql += ` ${whereCondition}`;
+    const [countRows] = await pool.query(countSelectSql, queryParamsForWhere);
+    const total = countRows[0].total;
+
+    baseSelectSql += ` ${whereCondition}`;
 
     if (filters.sortBy) {
         if (filters.sortBy === 'price_asc') baseSelectSql += ' ORDER BY price ASC';
         else if (filters.sortBy === 'price_desc') baseSelectSql += ' ORDER BY price DESC';
-       
+        else baseSelectSql += ' ORDER BY created_at DESC';
     } else {
-        baseSelectSql += ' ORDER BY created_at DESC'; 
+        baseSelectSql += ' ORDER BY created_at DESC';
     }
 
-    const [countRows] = await pool.query(countSelectSql, queryParams);
-    const total = countRows[0].total;
+    const queryParamsForSelect = [...queryParamsForWhere];
 
-    if (filters.limit) {
+    if (filters.limit !== undefined && !isNaN(filters.limit)) {
         baseSelectSql += ' LIMIT ?';
-        queryParams.push(parseInt(filters.limit));
-        if (filters.offset !== undefined) {
+        queryParamsForSelect.push(parseInt(filters.limit, 10));
+        if (filters.offset !== undefined && !isNaN(filters.offset)) {
             baseSelectSql += ' OFFSET ?';
-            queryParams.push(parseInt(filters.offset));
+            queryParamsForSelect.push(parseInt(filters.offset, 10));
         }
     }
 
-    const [products] = await pool.query(baseSelectSql, queryParams);
+    const [products] = await pool.query(baseSelectSql, queryParamsForSelect);
     return { products, total };
   },
 
   async update(id, productData) {
-    const { title, img_url, category, price, description, status } = productData;
-    const sql = 'UPDATE products SET title = ?, img_url = ?, category = ?, price = ?, description = ?, status = ?, updated_at = NOW() WHERE id = ?';
-    const [result] = await pool.query(sql, [title, img_url, category, price, description, status, id]);
+    const fields = Object.keys(productData);
+    if (fields.length === 0) {
+        return false;
+    }
+    const setClauses = fields.map(field => `${field} = ?`).join(', ');
+    const values = fields.map(field => productData[field]);
+    values.push(id);
+
+    const sql = `UPDATE products SET ${setClauses}, updated_at = NOW() WHERE id = ?`;
+    const [result] = await pool.query(sql, values);
     return result.affectedRows > 0;
   },
 
@@ -88,7 +97,7 @@ const Product = {
     return result.affectedRows > 0;
   },
 
-  async countProducts() { 
+  async countProducts() {
     const sql = 'SELECT COUNT(*) as count FROM products WHERE status = 1';
     const [rows] = await pool.query(sql);
     return rows[0].count;

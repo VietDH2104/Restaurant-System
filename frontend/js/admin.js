@@ -320,46 +320,103 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
 });
 
 let btnAddProductIn = document.getElementById("add-product-button");
-btnAddProductIn.addEventListener("click", async (e) => {
-    e.preventDefault();
+if (btnAddProductIn) { // Kiểm tra xem phần tử có tồn tại không
+    btnAddProductIn.addEventListener("click", async (e) => {
+        e.preventDefault();
 
-    const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-    const price = document.querySelector(".modal.add-product #gia-moi").value;
-    const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-    const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
+        const tenMon = document.querySelector(".modal.add-product #ten-mon").value.trim();
+        const priceStr = document.querySelector(".modal.add-product #gia-moi").value.trim();
+        const moTa = document.querySelector(".modal.add-product #mo-ta").value.trim();
+        const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
 
-    if(tenMon == "" || price == "" || categoryText == "") {
-        toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
-        return;
+        if (tenMon === "") {
+            toast({ title: "Chú ý", message: "Vui lòng nhập tên món!", type: "warning" });
+            document.querySelector(".modal.add-product #ten-mon").focus();
+            return;
+        }
+        if (categoryText === "" || categoryText === null) {
+            toast({ title: "Chú ý", message: "Vui lòng chọn loại món!", type: "warning" });
+            document.querySelector(".modal.add-product #chon-mon").focus();
+            return;
+        }
+        if (priceStr === "") {
+            toast({ title: "Chú ý", message: "Vui lòng nhập giá bán!", type: "warning" });
+            document.querySelector(".modal.add-product #gia-moi").focus();
+            return;
+        }
+
+        const priceValue = parseFloat(priceStr);
+        if (isNaN(priceValue) || priceValue < 0) {
+            toast({ title: "Chú ý", message: "Giá bán không hợp lệ!", type: "warning" });
+            document.querySelector(".modal.add-product #gia-moi").focus();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', tenMon);
+        formData.append('price', priceValue);
+        formData.append('category', categoryText);
+        if (moTa) {
+            formData.append('description', moTa);
+        }
+        formData.append('status', 1);
+
+        if (uploadedFile) {
+            formData.append('imageFile', uploadedFile);
+        }
+
+        try {
+            await ApiService.createProduct(formData);
+            toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
+            setDefaultProductFormValue();
+            document.querySelector(".modal.add-product").classList.remove("open");
+            adminCurrentPage = 1;
+            await showProduct();
+        } catch (error) {
+            console.error("Error adding product:", error);
+            toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
+        }
+    });
+}
+
+async function showProductArr(arr) {
+    let productHtml = "";
+    const productShowElement = document.getElementById("show-product");
+    if (!productShowElement) return;
+
+    if(!arr || arr.length == 0) {
+        productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
+    } else {
+        arr.forEach(product => {
+            let btnCtl = product.status == 1 ?
+            `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>` :
+            `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+            productHtml += `
+            <div class="list">
+                <div class="list-left">
+                    <img src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title || 'Sản phẩm không tên'}">
+                    <div class="list-info">
+                        <h4>${product.title || '(Chưa có tên)'}</h4>
+                        <p class="list-note">${product.description || '(Chưa có mô tả)'}</p>
+                        <span class="list-category">${product.category || '(Chưa phân loại)'}</span>
+                    </div>
+                </div>
+                <div class="list-right">
+                    <div class="list-price">
+                    <span class="list-current-price">${vnd(product.price)}</span>
+                    </div>
+                    <div class="list-control">
+                    <div class="list-tool">
+                        <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
+                        ${btnCtl}
+                    </div>
+                </div>
+                </div>
+            </div>`;
+        });
     }
-    if(isNaN(parseFloat(price))) {
-        toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', tenMon);
-    formData.append('price', parseFloat(price));
-    formData.append('description', moTa);
-    formData.append('category', categoryText);
-    formData.append('status', 1);
-
-    if (uploadedFile) {
-        formData.append('imageFile', uploadedFile);
-    }
-
-    try {
-        await ApiService.createProduct(formData);
-        toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
-        setDefaultProductFormValue();
-        document.querySelector(".modal.add-product").classList.remove("open");
-        adminCurrentPage = 1;
-        await showProduct();
-    } catch (error) {
-        console.error("Error adding product:", error);
-        toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
-    }
-});
+    productShowElement.innerHTML = productHtml;
+}
 
 const productModalCloseButton = document.querySelector(".modal.add-product .modal-close.product-form");
 if (productModalCloseButton) {
