@@ -145,7 +145,49 @@ const Order = {
 
     const [rows] = await pool.query(sql, params);
     return rows;
-  }
+  },async findOrdersContainingProduct(filters = {}) {
+        if (!filters.productId) {
+            throw new Error('Product ID is required to find orders containing a product.');
+        }
+
+        let sql = `
+            SELECT
+                o.id as order_id,
+                o.customer_name,
+                o.customer_phone,
+                o.order_timestamp,
+                o.total_amount,
+                o.status as order_status,
+                oi.quantity as product_quantity_in_order,
+                oi.price_at_purchase as product_price_in_order,
+                oi.item_notes as product_item_notes,
+                p.id as product_id,
+                p.title as product_title 
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.product_id = ?
+        `;
+        const params = [filters.productId];
+
+        if (filters.dateStart) {
+            sql += ' AND DATE(o.order_timestamp) >= ?';
+            params.push(filters.dateStart);
+        }
+        if (filters.dateEnd) {
+            sql += ' AND DATE(o.order_timestamp) <= ?';
+            params.push(filters.dateEnd);
+        }
+        if (filters.status !== undefined && !isNaN(filters.status)) {
+            sql += ' AND o.status = ?';
+            params.push(filters.status);
+        }
+
+        sql += ' ORDER BY o.order_timestamp DESC';
+
+        const [rows] = await pool.query(sql, params);
+        return rows;
+    }
 };
 
 module.exports = Order;

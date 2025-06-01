@@ -888,12 +888,12 @@ window.addEventListener("scroll", () => {
 })
 
 let currentProductsCache = [];
-async function renderProducts(showProduct) { // Đổi tên tham số nếu cần, hoặc đổi tên hàm nếu có nhiều hàm render
+async function renderProducts(showProduct) { 
     let productHtml = '';
-    const homeProductsElement = document.getElementById('home-products'); // Phần tử để chèn HTML sản phẩm
+    const homeProductsElement = document.getElementById('home-products');
 
     if (!homeProductsElement) {
-        console.error("MAIN.JS: Lỗi - Không tìm thấy phần tử #home-products.");
+       
         return;
     }
 
@@ -906,26 +906,20 @@ async function renderProducts(showProduct) { // Đổi tên tham số nếu cầ
         if (homeTitleElement) homeTitleElement.style.display = "block";
 
         showProduct.forEach((product) => {
-            let imageUrl = './assets/img/blank-image.png'; // Ảnh mặc định
-
-            // product.img_url từ API backend giờ đây sẽ là /api/products/image/ID
-            // nếu bạn đang dùng cách lưu BLOB và phục vụ qua API.
-            // Hoặc là /uploads/tenfile.jpg nếu bạn dùng cách lưu file tĩnh.
-            // Điều quan trọng là nó là đường dẫn tương đối từ gốc backend.
+            let imageUrl = './assets/img/blank-image.png'; 
 
             if (product.img_url && typeof product.img_url === 'string' && product.img_url.trim() !== "") {
+               
                 if (product.img_url.startsWith('http://') || product.img_url.startsWith('https://')) {
-                    imageUrl = product.img_url;
+                    imageUrl = product.img_url; 
                 } else {
                     let relativePath = product.img_url;
                     if (!relativePath.startsWith('/')) {
                         relativePath = '/' + relativePath;
                     }
-                    imageUrl = BACKEND_URL + relativePath; // NỐI VỚI BACKEND_URL
+                    imageUrl = BACKEND_URL + relativePath; 
                 }
             }
-
-            // console.log(`MAIN.JS - Sản phẩm: "${product.title}", URL ảnh sẽ dùng: "${imageUrl}"`); // Bật để debug
 
             productHtml += `<div class="col-product">
             <article class="card-product" >

@@ -35,4 +35,30 @@ exports.getSalesReport = async (req, res) => {
         console.error('Lỗi lấy báo cáo doanh số:', error);
         res.status(500).json({ message: 'Lỗi máy chủ khi lấy báo cáo doanh số.', error: error.message });
     }
+    
+};
+
+exports.getOrdersByProductId = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const { dateStart, dateEnd, orderStatus } = req.query;
+
+        if (!productId || isNaN(parseInt(productId))) {
+            return res.status(400).json({ message: 'Product ID không hợp lệ.' });
+        }
+
+        const filters = {
+            productId: parseInt(productId),
+            dateStart: dateStart && dateStart !== 'undefined' ? dateStart : undefined,
+            dateEnd: dateEnd && dateEnd !== 'undefined' ? dateEnd : undefined,
+            status: orderStatus && orderStatus !== 'undefined' && !isNaN(parseInt(orderStatus)) ? parseInt(orderStatus) : undefined
+        };
+
+        const orders = await Order.findOrdersContainingProduct(filters);
+
+        res.json(orders);
+    } catch (error) {
+        console.error(`Lỗi lấy đơn hàng theo sản phẩm ID ${req.params.productId}:`, error);
+        res.status(500).json({ message: 'Lỗi máy chủ khi lấy đơn hàng theo sản phẩm.', error: error.message });
+    }
 };

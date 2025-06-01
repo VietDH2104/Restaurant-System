@@ -258,6 +258,10 @@
         fetchAdminSalesReport: async function(params = {}) {
             const queryParams = new URLSearchParams(params).toString();
             return request(`/admin/sales-report?${queryParams}`, 'GET', null, true);
+        },
+        fetchAdminOrdersByProductId: async function(productId, params = {}) { // HÀM MỚI
+            const queryParams = new URLSearchParams(params).toString();
+            return request(`/admin/orders-by-product/${productId}?${queryParams}`, 'GET', null, true);
         }
     };
 })();

@@ -1,12 +1,9 @@
-// backend/src/routes/productRoutes.js
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 const multer = require('multer');
-const path = require('path'); // Vẫn cần path cho fileFilter
-
-// Sử dụng memoryStorage để Multer giữ file trong bộ nhớ dưới dạng Buffer
+const path = require('path'); 
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -21,16 +18,15 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: storage, // Sử dụng memoryStorage
+  storage: storage, 
   fileFilter: fileFilter,
-  limits: { fileSize: 1024 * 1024 * 5 } // Giới hạn 5MB
+  limits: { fileSize: 1024 * 1024 * 5 } 
 });
 
 router.get('/', productController.getAllProducts);
 router.get('/admin/all', protect, isAdmin, productController.getAllProductsAdmin);
 
-// Route GET mới để phục vụ ảnh từ CSDL
-router.get('/image/:id', productController.getProductImage); // :id là id của sản phẩm
+router.get('/image/:id', productController.getProductImage); 
 
 router.get('/:id', productController.getProductById);
 

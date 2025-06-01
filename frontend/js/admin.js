@@ -44,7 +44,6 @@ if (sidebar && contentContainer) {
     contentContainer.addEventListener('click', (e) => {
         if (window.innerWidth < 1024 && sidebar.classList.contains('open')) {
             if (menuIconButton && !menuIconButton.contains(e.target)) {
-                // sidebar.classList.remove('open');
             }
         }
     });
@@ -132,11 +131,12 @@ function getCurrentSortModeForStats() {
     return 0;
 }
 
-async function showProductArr(arr) {
+async function showProductArr(arr) { 
     let productHtml = "";
     const productShowElement = document.getElementById("show-product");
 
     if (!productShowElement) {
+       
         return;
     }
 
@@ -148,17 +148,19 @@ async function showProductArr(arr) {
             `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>` :
             `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
 
-            let imageUrl = './assets/img/blank-image.png';
+        
+            let imageUrl = './assets/img/blank-image.png'; 
 
             if (product.img_url && typeof product.img_url === 'string' && product.img_url.trim() !== "") {
+              
                 if (product.img_url.startsWith('http://') || product.img_url.startsWith('https://')) {
-                    imageUrl = product.img_url;
+                    imageUrl = product.img_url; 
                 } else {
                     let relativePath = product.img_url;
                     if (!relativePath.startsWith('/')) {
                         relativePath = '/' + relativePath;
                     }
-                    imageUrl = BACKEND_URL + relativePath;
+                    imageUrl = BACKEND_URL + relativePath; 
                 }
             }
 
@@ -194,7 +196,6 @@ async function showProduct(externalFilters = {}) {
     let searchInputEl = document.getElementById('form-search-product');
     let selectOp = selectOpEl ? selectOpEl.value : "Tất cả";
     let valeSearchInput = searchInputEl ? searchInputEl.value : "";
-
 
     const params = {
         page: adminCurrentPage,
@@ -335,9 +336,8 @@ if(btnUpdateProductIn) {
         const priceStr = modal.querySelector("#gia-moi").value;
         const description = modal.querySelector("#mo-ta").value;
         const category = modal.querySelector("#chon-mon").value;
-        const statusInput = modal.querySelector("#product-status-edit"); // Cần input này nếu muốn sửa status
+        const statusInput = modal.querySelector("#product-status-edit");
         const status = statusInput ? statusInput.value : undefined;
-
 
         if (!title.trim() || !priceStr.trim() || !category) {
             if (typeof toast === 'function') toast({ title: "Chú ý", message: "Tên món, giá và loại món là bắt buộc!", type: "warning" });
@@ -358,7 +358,6 @@ if(btnUpdateProductIn) {
 
         const previewImageSrc = modal.querySelector(".upload-image-preview").src;
         const originalUrlDataSet = modal.querySelector(".upload-image-preview").dataset.originalUrl;
-
 
         if (uploadedFile) {
             formData.append('imageFile', uploadedFile);
@@ -398,7 +397,6 @@ if (btnAddProductInReal) {
 
         const categorySelect = modal.querySelector("#chon-mon");
         const categoryText = categorySelect ? categorySelect.value : "";
-
 
         if (tenMon === "") {
             if (typeof toast === 'function') toast({ title: "Chú ý", message: "Vui lòng nhập tên món!", type: "warning" });
@@ -450,7 +448,6 @@ if (btnAddProductInReal) {
     });
 }
 
-
 const productModalCloseButton = document.querySelector(".modal.add-product .modal-close.product-form");
 if (productModalCloseButton) {
     productModalCloseButton.addEventListener("click",() => {
@@ -470,16 +467,12 @@ function setDefaultProductFormValue() {
     }
     const tenMonInput = productModal.querySelector("#ten-mon");
     if(tenMonInput) tenMonInput.value = "";
-
     const giaMoiInput = productModal.querySelector("#gia-moi");
     if(giaMoiInput) giaMoiInput.value = "";
-
     const moTaInput = productModal.querySelector("#mo-ta");
     if(moTaInput) moTaInput.value = "";
-
     const chonMonSelect = productModal.querySelector("#chon-mon");
     if(chonMonSelect) chonMonSelect.value = "Món chay";
-
     const fileInput = productModal.querySelector("#up-hinh-anh");
     if(fileInput) fileInput.value = null;
 
@@ -499,7 +492,6 @@ if (btnAddProduct){
         }
     });
 }
-
 
 let closePopupButtons = document.querySelectorAll(".modal .modal-close");
 closePopupButtons.forEach(button => {
@@ -600,11 +592,11 @@ async function detailOrderAdmin(orderId) {
 
                 spHtml += `<div class="order-product">
                     <div class="order-product-left">
-                        <img src="${itemImageUrl}" alt="${item.product_title || 'Sản phẩm'}">
+                        <img src="${itemImageUrl}" alt="${item.product_title || 'Sản phẩm'}" style="width: 60px; height: 60px; object-fit: cover;">
                         <div class="order-product-info">
                             <h4>${item.product_title}</h4>
                             <p class="order-product-note"><i class="fa-light fa-pen"></i> ${item.item_notes || 'Không có ghi chú'}</p>
-                            <p class="order-product-quantity">SL: ${item.quantity}<p>
+                            <p class="order-product-quantity">SL: ${item.quantity}</p>
                         </div>
                     </div>
                     <div class="order-product-right">
@@ -724,7 +716,7 @@ async function findOrder(externalFilters = {}) {
     try {
         const ordersData = await ApiService.fetchAdminOrders(params);
         showOrder(ordersData);
-         if (ordersData.pagination && typeof setupAdminPagination === 'function') {
+         if (ordersData && ordersData.pagination && typeof setupAdminPagination === 'function') {
             setupAdminPagination(ordersData.pagination.totalItems, adminPerPage, ordersData.pagination.currentPage, 'order', params);
         }
     } catch (error) {
@@ -800,7 +792,7 @@ async function thongKe(sortMode, externalFilters = {}) {
         const salesReport = await ApiService.fetchAdminSalesReport(params);
         showThongKeTable(salesReport);
         updateThongKeOverview(salesReport);
-         if (salesReport.pagination && typeof setupAdminPagination === 'function') {
+         if (salesReport && salesReport.pagination && typeof setupAdminPagination === 'function') {
             setupAdminPagination(salesReport.pagination.totalItems, adminPerPage, salesReport.pagination.currentPage, 'stats', params);
         }
     } catch (error) {
@@ -839,7 +831,7 @@ function showThongKeTable(reportData) {
     } else {
         reportData.forEach((item, index) => {
             let itemImageUrl = './assets/img/blank-image.png';
-            if(item.product_img_url) { // product_img_url là /api/products/image/ID
+            if(item.product_img_url) {
                  itemImageUrl = BACKEND_URL + item.product_img_url;
             }
             orderHtml += `
@@ -855,12 +847,64 @@ function showThongKeTable(reportData) {
     }
     showTkElement.innerHTML = orderHtml;
 
-    document.querySelectorAll(".product-order-detail").forEach(btn => {
-        btn.onclick = () => {
+  document.querySelectorAll(".product-order-detail").forEach(btn => {
+        btn.onclick = async () => { 
             const prodId = btn.dataset.productId;
-            if (typeof toast === 'function') toast({title: "Thông tin", message: `Chi tiết đơn hàng cho sản phẩm ID ${prodId} (chức năng này cần API riêng).`, type: "info"})
+            const productTitle = btn.closest('tr').querySelector('.prod-img-title p').textContent; // Lấy tên sản phẩm từ hàng
+
+            let timeStartValueEl = document.getElementById("time-start-tk");
+            let timeEndValueEl = document.getElementById("time-end-tk");
+            let dateStart = timeStartValueEl ? timeStartValueEl.value : undefined;
+            let dateEnd = timeEndValueEl ? timeEndValueEl.value : undefined;
+
+            const params = {};
+            if (dateStart) params.dateStart = dateStart;
+            if (dateEnd) params.dateEnd = dateEnd;
+
+
+            try {
+                const ordersForProduct = await ApiService.fetchAdminOrdersByProductId(prodId, params);
+                displayProductOrdersModal(productTitle, ordersForProduct); 
+            } catch (error) {
+                console.error(`Error fetching orders for product ID ${prodId}:`, error);
+                if (typeof toast === 'function') toast({ title: "Lỗi", message: `Không thể tải chi tiết đơn hàng cho sản phẩm ID ${prodId}.`, type: "error" });
+            }
         };
     });
+}
+
+function displayProductOrdersModal(productTitle, orders) {
+    const modalElement = document.querySelector(".modal.detail-order-product");
+    const tableBody = modalElement.querySelector("#show-product-order-detail"); 
+
+    if (!modalElement || !tableBody) {
+        console.error("Không tìm thấy phần tử modal hoặc tbody cho chi tiết đơn hàng sản phẩm.");
+        return;
+    }
+
+    const modalTitle = modalElement.querySelector(".modal-container-title"); 
+    if (modalTitle) {
+        modalTitle.textContent = `Các đơn hàng chứa: ${productTitle}`;
+    }
+
+
+    let ordersHtml = '';
+    if (!orders || orders.length === 0) {
+        ordersHtml = `<tr><td colspan="4" style="text-align:center;">Không có đơn hàng nào chứa sản phẩm này.</td></tr>`;
+    } else {
+        orders.forEach(order => {
+            ordersHtml += `
+                <tr>
+                    <td>${order.order_id}</td>
+                    <td>${order.product_quantity_in_order}</td>
+                    <td>${vnd(order.product_price_in_order)}</td>
+                    <td>${formatDate(order.order_timestamp)}</td>
+                </tr>
+            `;
+        });
+    }
+    tableBody.innerHTML = ordersHtml;
+    modalElement.classList.add("open");
 }
 
 let currentEditingUserAccountId = null;
@@ -933,10 +977,9 @@ async function showUser(externalFilters = {}) {
     let timeEndUserEl = document.getElementById("time-end-user");
 
     let tinhTrangValue = tinhTrangUserEl ? tinhTrangUserEl.value : "2";
-    let searchValue = searchUserEl ? searchUserEl.value : "";
+    let searchValue = searchUserEl ? searchUserEl.value.trim() : "";
     let timeStartValue = timeStartUserEl ? timeStartUserEl.value : "";
     let timeEndValue = timeEndUserEl ? timeEndUserEl.value : "";
-
 
     if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
         alert("Ngày kết thúc không thể trước ngày bắt đầu!");
@@ -956,16 +999,18 @@ async function showUser(externalFilters = {}) {
         params.search = searchValue;
     }
     if (timeStartValue) {
-        params.dateStart = timeStartValue;
+        params.joinDateStart = timeStartValue;
     }
     if (timeEndValue) {
-        params.dateEnd = timeEndValue;
+        params.joinDateEnd = timeEndValue;
     }
 
     try {
         const usersData = await ApiService.fetchAdminUsers(params);
-        showUserArr(usersData); // Giả sử API trả về mảng trực tiếp
-        if (usersData && usersData.length !== undefined && typeof setupAdminPagination === 'function') { // Đơn giản hóa, nếu là mảng thì dùng length
+        showUserArr(usersData);
+        if (usersData && usersData.pagination && typeof setupAdminPagination === 'function') {
+             setupAdminPagination(usersData.pagination.totalItems, adminPerPage, usersData.pagination.currentPage, 'user', params);
+        } else if (Array.isArray(usersData) && typeof setupAdminPagination === 'function') {
              setupAdminPagination(usersData.length, adminPerPage, adminCurrentPage, 'user', params);
         }
     } catch (error) {
@@ -1142,7 +1187,6 @@ if (logoutAccButton) {
     });
 }
 
-
 document.addEventListener('DOMContentLoaded', async () => {
     const isAdminLoggedIn = await checkLogin();
     if (isAdminLoggedIn) {
@@ -1151,8 +1195,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         await findOrder();
         await thongKe(0);
         await showUser();
-        if(typeof testDisplaySingleImage === "function"){
-             testDisplaySingleImage();
-        }
     }
 });
