@@ -14,66 +14,75 @@ const Product = {
     return rows[0]; 
   },
 
-async findAll(filters = {}) {
-    let baseSelectSql = 'SELECT * FROM products';
-    let countSelectSql = 'SELECT COUNT(*) as total FROM products';
-    let whereClauses = [];
-    const queryParams = [];
+  async findAll(filters = {}) {
+      let baseSelectSql = 'SELECT * FROM products';
+      let countSelectSql = 'SELECT COUNT(*) as total FROM products';
+      let whereClauses = [];
+      const queryParams = [];
 
-    if (filters.forCustomerView) {
-        whereClauses.push('status = 1');
-    } else if (filters.status !== undefined && filters.status !== 'all' && filters.status !== '2') {
-        whereClauses.push('status = ?');
-        queryParams.push(parseInt(filters.status));
-    }
+      // Apply status filter for customer view
+      if (filters.forCustomerView) {
+          whereClauses.push('status = 1');
+      } else if (filters.status !== undefined && filters.status !== 'all' && filters.status !== '2') {
+          whereClauses.push('status = ?');
+          queryParams.push(parseInt(filters.status));
+      }
 
-    if (filters.category && filters.category !== 'Tất cả' && filters.category !== 'undefined') {
-        whereClauses.push('LOWER(category) = LOWER(?)');
-        queryParams.push(filters.category);
-    }
+      // Handle category filter
+      if (filters.category && filters.category !== 'Tất cả' && filters.category !== 'undefined' && filters.category.trim()) {
+          whereClauses.push('LOWER(category) = LOWER(?)');
+          queryParams.push(filters.category.trim());
+      }
 
-    if (filters.search && filters.search !== 'undefined') {
-        whereClauses.push('LOWER(title) LIKE LOWER(?)');
-        queryParams.push(`%${filters.search}%`);
-    }
+      // Handle search filter
+      if (filters.search && filters.search.trim() && filters.search !== 'undefined') {
+          whereClauses.push('LOWER(title) LIKE LOWER(?)');
+          queryParams.push(`%${filters.search.trim()}%`);
+      }
 
-    // Only add price conditions if they are valid numbers
-    if (filters.minPrice !== undefined && !isNaN(filters.minPrice)) {
-        whereClauses.push('price >= ?');
-        queryParams.push(parseFloat(filters.minPrice));
-    }
-    if (filters.maxPrice !== undefined && !isNaN(filters.maxPrice)) {
-        whereClauses.push('price <= ?');
-        queryParams.push(parseFloat(filters.maxPrice));
-    }
+      // Handle price filters
+      if (filters.minPrice !== undefined && !isNaN(filters.minPrice)) {
+          whereClauses.push('price >= ?');
+          queryParams.push(parseFloat(filters.minPrice));
+      }
+      if (filters.maxPrice !== undefined && !isNaN(filters.maxPrice)) {
+          whereClauses.push('price <= ?');
+          queryParams.push(parseFloat(filters.maxPrice));
+      }
 
-    const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-    baseSelectSql += ` ${whereCondition}`;
-    countSelectSql += ` ${whereCondition}`;
+      // Build WHERE clause
+      const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+      baseSelectSql += ` ${whereCondition}`;
+      countSelectSql += ` ${whereCondition}`;
 
-    if (filters.sortBy) {
-        if (filters.sortBy === 'price_asc') baseSelectSql += ' ORDER BY price ASC';
-        else if (filters.sortBy === 'price_desc') baseSelectSql += ' ORDER BY price DESC';
-    } else {
-        baseSelectSql += ' ORDER BY created_at DESC';
-    }
+      // Apply sorting
+      if (filters.sortBy) {
+          if (filters.sortBy === 'price_asc') baseSelectSql += ' ORDER BY price ASC';
+          else if (filters.sortBy === 'price_desc') baseSelectSql += ' ORDER BY price DESC';
+      } else {
+          baseSelectSql += ' ORDER BY created_at DESC';
+      }
 
-    if (filters.limit) {
-        baseSelectSql += ' LIMIT ?';
-        queryParams.push(parseInt(filters.limit));
-        if (filters.offset !== undefined) {
-            baseSelectSql += ' OFFSET ?';
-            queryParams.push(parseInt(filters.offset));
-        }
-    }
+      // Apply pagination
+      if (filters.limit) {
+          baseSelectSql += ' LIMIT ?';
+          queryParams.push(parseInt(filters.limit));
+          if (filters.offset !== undefined) {
+              baseSelectSql += ' OFFSET ?';
+              queryParams.push(parseInt(filters.offset));
+          }
+      }
 
-    console.log('SQL Query:', baseSelectSql, 'Params:', queryParams);
-    const [countRows] = await pool.query(countSelectSql, queryParams);
-    const total = countRows[0].total;
+      // Log the SQL query and parameters
+      console.log('Executing SQL Query:', baseSelectSql, 'Params:', queryParams);
 
-    const [products] = await pool.query(baseSelectSql, queryParams);
-    return { products, total };
-},
+      // Execute queries
+      const [countRows] = await pool.query(countSelectSql, queryParams.slice(0, queryParams.length - (filters.offset !== undefined ? 2 : 1)));
+      const total = countRows[0].total;
+
+      const [products] = await pool.query(baseSelectSql, queryParams);
+      return { products, total };
+  },
 
   async update(id, productData) {
     const fields = [];

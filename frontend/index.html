@@ -30,7 +30,7 @@
 
         <!-- Search -->
         <div class="header-middle-center">
-            <form action="" class="form-search">
+            <form action="" class="form-search" onsubmit="event.preventDefault(); searchProducts();">
               <span class="search-btn"
                 ><i class="fa-light fa-magnifying-glass"></i
               ></span>
@@ -39,7 +39,6 @@
                 id="search-input"
                 class="form-search-input"
                 placeholder="Tìm kiếm món ăn..."
-                oninput="debouncedSearchProducts()"
               />
               <button class="filter-btn">
                 <i class="fa-light fa-filter-list"></i><span>Lọc</span>
