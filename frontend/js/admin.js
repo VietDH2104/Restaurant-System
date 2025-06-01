@@ -156,6 +156,146 @@ function getCurrentSortModeForStats() {
   return 0;
 }
 
+// async function showProductArr(arr) {
+//   let productHtml = "";
+//   const productShowElement = document.getElementById("show-product");
+//   if (!productShowElement) return;
+
+//   if (!arr || arr.length == 0) {
+//     productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
+//   } else {
+//     arr.forEach((product) => {
+//       let btnCtl =
+//         product.status == 1
+//           ? `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>`
+//           : `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+//       productHtml += `
+//             <div class="list">
+//                 <div class="list-left">
+//                     <img src="${
+//                       product.img_url || "./assets/img/blank-image.png"
+//                     }" alt="${product.title}">
+//                     <div class="list-info">
+//                         <h4>${product.title}</h4>
+//                         <p class="list-note">${product.description || ""}</p>
+//                         <span class="list-category">${product.category}</span>
+//                     </div>
+//                 </div>
+//                 <div class="list-right">
+//                     <div class="list-price">
+//                     <span class="list-current-price">${vnd(
+//                       product.price
+//                     )}</span>
+//                     </div>
+//                     <div class="list-control">
+//                     <div class="list-tool">
+//                         <button class="btn-edit" onclick="editProduct(${
+//                           product.id
+//                         })"><i class="fa-light fa-pen-to-square"></i></button>
+//                         ${btnCtl}
+//                     </div>
+//                 </div>
+//                 </div>
+//             </div>`;
+//     });
+//   }
+//   productShowElement.innerHTML = productHtml;
+// }
+
+// async function showProductArr(arr) {
+//   let productHtml = "";
+//   const productShowElement = document.getElementById("show-product");
+//   if (!productShowElement) return;
+
+//   if (!arr || arr.length == 0) {
+//     productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
+//   } else {
+//     arr.forEach((product) => {
+//       let btnCtl =
+//         product.status == 1
+//           ? `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>`
+//           : `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+//       // Normalize image URL
+//       let imgSrc = product.img_url;
+//       if (!imgSrc || imgSrc === '') {
+//         imgSrc = './assets/img/blank-image.png';
+//       } else if (!imgSrc.startsWith('/assets') && !imgSrc.startsWith('/uploads')) {
+//         // Handle legacy or absolute URLs if needed
+//         imgSrc = `/uploads/${imgSrc}`;
+//       }
+//       productHtml += `
+//             <div class="list">
+//                 <div class="list-left">
+//                     <img src="${imgSrc}" alt="${product.title}">
+//                     <div class="list-info">
+//                         <h4>${product.title}</h4>
+//                         <p class="list-note">${product.description || ""}</p>
+//                         <span class="list-category">${product.category}</span>
+//                     </div>
+//                 </div>
+//                 <div class="list-right">
+//                     <div class="list-price">
+//                         <span class="list-current-price">${vnd(product.price)}</span>
+//                     </div>
+//                     <div class="list-control">
+//                         <div class="list-tool">
+//                             <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
+//                             ${btnCtl}
+//                         </div>
+//                     </div>
+//                 </div>
+//             </div>`;
+//     });
+//   }
+//   productShowElement.innerHTML = productHtml;
+// }
+
+// async function showProductArr(arr) {
+//   let productHtml = "";
+//   const productShowElement = document.getElementById("show-product");
+//   if (!productShowElement) return;
+
+//   if (!arr || arr.length == 0) {
+//     productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
+//   } else {
+//     arr.forEach((product) => {
+//       let btnCtl =
+//         product.status == 1
+//           ? `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>`
+//           : `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+//       // Normalize image URL
+//       let imgSrc = product.img_url || './assets/img/blank-image.png';
+//       // Prepend backend URL if imgSrc starts with /uploads
+//       if (imgSrc.startsWith('/uploads')) {
+//         imgSrc = `http://localhost:5000${imgSrc}`;
+//       }
+//       productHtml += `
+//             <div class="list">
+//                 <div class="list-left">
+//                     <img src="${imgSrc}" alt="${product.title}">
+//                     <div class="list-info">
+//                         <h4>${product.title}</h4>
+//                         <p class="list-note">${product.description || ""}</p>
+//                         <span class="list-category">${product.category}</span>
+//                     </div>
+//                 </div>
+//                 <div class="list-right">
+//                     <div class="list-price">
+//                         <span class="list-current-price">${vnd(product.price)}</span>
+//                     </div>
+//                     <div class="list-control">
+//                         <div class="list-tool">
+//                             <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
+//                             ${btnCtl}
+//                         </div>
+//                     </div>
+//                 </div>
+//             </div>`;
+//     });
+//   }
+//   productShowElement.innerHTML = productHtml;
+// }
+
 async function showProductArr(arr) {
   let productHtml = "";
   const productShowElement = document.getElementById("show-product");
@@ -169,12 +309,20 @@ async function showProductArr(arr) {
         product.status == 1
           ? `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>`
           : `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+      // Normalize image URL
+      let imgSrc = product.img_url;
+      if (!imgSrc || imgSrc === '') {
+        imgSrc = './assets/img/blank-image.png';
+      } else {
+        // Prepend backend base URL for images from /uploads
+        if (imgSrc.startsWith('/uploads')) {
+          imgSrc = `http://localhost:5000${imgSrc}`;
+        }
+      }
       productHtml += `
             <div class="list">
                 <div class="list-left">
-                    <img src="${
-                      product.img_url || "./assets/img/blank-image.png"
-                    }" alt="${product.title}">
+                    <img src="${imgSrc}" alt="${product.title}">
                     <div class="list-info">
                         <h4>${product.title}</h4>
                         <p class="list-note">${product.description || ""}</p>
@@ -183,18 +331,14 @@ async function showProductArr(arr) {
                 </div>
                 <div class="list-right">
                     <div class="list-price">
-                    <span class="list-current-price">${vnd(
-                      product.price
-                    )}</span>
+                        <span class="list-current-price">${vnd(product.price)}</span>
                     </div>
                     <div class="list-control">
-                    <div class="list-tool">
-                        <button class="btn-edit" onclick="editProduct(${
-                          product.id
-                        })"><i class="fa-light fa-pen-to-square"></i></button>
-                        ${btnCtl}
+                        <div class="list-tool">
+                            <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
+                            ${btnCtl}
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>`;
     });
@@ -279,6 +423,49 @@ async function updateProductStatus(productId, newStatus, element) {
 }
 
 var currentEditingProductId = null;
+// async function editProduct(id) {
+//   try {
+//     const product = await ApiService.fetchProductById(id);
+//     if (!product) {
+//       toast({
+//         title: "Lỗi",
+//         message: "Không tìm thấy sản phẩm.",
+//         type: "error",
+//       });
+//       return;
+//     }
+//     currentEditingProductId = product.id;
+
+//     document
+//       .querySelectorAll(".add-product-e")
+//       .forEach((item) => (item.style.display = "none"));
+//     document
+//       .querySelectorAll(".edit-product-e")
+//       .forEach((item) => (item.style.display = "block"));
+//     document.querySelector(".modal.add-product").classList.add("open");
+
+//     document.querySelector(".modal.add-product .upload-image-preview").src =
+//       product.img_url || "./assets/img/blank-image.png";
+//     document.querySelector(".modal.add-product #ten-mon").value = product.title;
+//     document.querySelector(".modal.add-product #gia-moi").value = product.price;
+//     document.querySelector(".modal.add-product #mo-ta").value =
+//       product.description || "";
+//     document.querySelector(".modal.add-product #chon-mon").value =
+//       product.category;
+//     document.querySelector(
+//       ".modal.add-product .upload-image-preview"
+//     ).dataset.originalUrl = product.img_url || "";
+//     uploadedFile = null;
+//   } catch (error) {
+//     console.error("Error fetching product for edit:", error);
+//     toast({
+//       title: "Lỗi",
+//       message: "Không thể tải thông tin sản phẩm để sửa.",
+//       type: "error",
+//     });
+//   }
+// }
+
 async function editProduct(id) {
   try {
     const product = await ApiService.fetchProductById(id);
@@ -300,17 +487,13 @@ async function editProduct(id) {
       .forEach((item) => (item.style.display = "block"));
     document.querySelector(".modal.add-product").classList.add("open");
 
-    document.querySelector(".modal.add-product .upload-image-preview").src =
-      product.img_url || "./assets/img/blank-image.png";
+    const imgSrc = product.img_url || "./assets/img/blank-image.png";
+    document.querySelector(".modal.add-product .upload-image-preview").src = imgSrc;
     document.querySelector(".modal.add-product #ten-mon").value = product.title;
     document.querySelector(".modal.add-product #gia-moi").value = product.price;
-    document.querySelector(".modal.add-product #mo-ta").value =
-      product.description || "";
-    document.querySelector(".modal.add-product #chon-mon").value =
-      product.category;
-    document.querySelector(
-      ".modal.add-product .upload-image-preview"
-    ).dataset.originalUrl = product.img_url || "";
+    document.querySelector(".modal.add-product #mo-ta").value = product.description || "";
+    document.querySelector(".modal.add-product #chon-mon").value = product.category;
+    document.querySelector(".modal.add-product .upload-image-preview").dataset.originalUrl = imgSrc;
     uploadedFile = null;
   } catch (error) {
     console.error("Error fetching product for edit:", error);
@@ -353,6 +536,211 @@ function uploadImage(el) {
   }
 }
 
+// let btnUpdateProductIn = document.getElementById("update-product-button");
+// btnUpdateProductIn.addEventListener("click", async (e) => {
+//   e.preventDefault();
+//   if (!currentEditingProductId) {
+//     toast({
+//       title: "Lỗi",
+//       message: "Không có sản phẩm nào đang được chọn để sửa.",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   const title = document.querySelector(".modal.add-product #ten-mon").value;
+//   const price = document.querySelector(".modal.add-product #gia-moi").value;
+//   const description = document.querySelector(".modal.add-product #mo-ta").value;
+//   const category = document.querySelector(".modal.add-product #chon-mon").value;
+
+//   if (!title || !price || !category) {
+//     toast({
+//       title: "Chú ý",
+//       message: "Tên món, giá và loại món là bắt buộc!",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   if (isNaN(parseFloat(price))) {
+//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//     return;
+//   }
+
+//   const formData = new FormData();
+//   formData.append("title", title);
+//   formData.append("price", parseFloat(price));
+//   formData.append("description", description);
+//   formData.append("category", category);
+//   formData.append("status", "1");
+
+//   // formData.append("title", tenMon);
+//   // formData.append("price", parseFloat(price));
+//   // formData.append("description", moTa);
+//   // formData.append("category", categoryText);
+//   // formData.append("status", "1");
+//   if (fileInput.files.length > 0) {
+//     formData.append("imageFile", fileInput.files[0]);
+//   }
+//   console.log('FormData contents:');
+//   for (let [key, value] of formData.entries()) {
+//     console.log(key, value);
+//   }
+
+//   if (uploadedFile) {
+//     formData.append("imageFile", uploadedFile);
+//   }
+
+//   try {
+//     await ApiService.updateProduct(currentEditingProductId, formData);
+//     toast({
+//       title: "Success",
+//       message: "Sửa sản phẩm thành công!",
+//       type: "success",
+//     });
+//     setDefaultProductFormValue();
+//     document.querySelector(".modal.add-product").classList.remove("open");
+//     await showProduct({ page: adminCurrentPage });
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//     toast({
+//       title: "Lỗi",
+//       message: error.data?.message || "Sửa sản phẩm thất bại.",
+//       type: "error",
+//     });
+//   }
+// });
+
+// let btnUpdateProductIn = document.getElementById("update-product-button");
+// btnUpdateProductIn.addEventListener("click", async (e) => {
+//   e.preventDefault();
+//   if (!currentEditingProductId) {
+//     toast({
+//       title: "Lỗi",
+//       message: "Không có sản phẩm nào đang được chọn để sửa.",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   const title = document.querySelector(".modal.add-product #ten-mon").value;
+//   const price = document.querySelector(".modal.add-product #gia-moi").value;
+//   const description = document.querySelector(".modal.add-product #mo-ta").value;
+//   const category = document.querySelector(".modal.add-product #chon-mon").value;
+
+//   if (!title || !price || !category) {
+//     toast({
+//       title: "Chú ý",
+//       message: "Tên món, giá và loại món là bắt buộc!",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   if (isNaN(parseFloat(price))) {
+//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//     return;
+//   }
+
+//   const formData = new FormData();
+//   formData.append("title", title);
+//   formData.append("price", parseFloat(price));
+//   formData.append("description", description);
+//   formData.append("category", category);
+//   formData.append("status", "1");
+
+//   if (uploadedFile) {
+//     formData.append("imageFile", uploadedFile);
+//   }
+
+//   console.log('FormData contents:');
+//   for (let [key, value] of formData.entries()) {
+//     console.log(key, value);
+//   }
+
+//   try {
+//     await ApiService.updateProduct(currentEditingProductId, formData);
+//     toast({
+//       title: "Success",
+//       message: "Sửa sản phẩm thành công!",
+//       type: "success",
+//     });
+//     setDefaultProductFormValue();
+//     document.querySelector(".modal.add-product").classList.remove("open");
+//     await showProduct({ page: adminCurrentPage });
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//     toast({
+//       title: "Lỗi",
+//       message: error.response?.data?.message || "Sửa sản phẩm thất bại.",
+//       type: "error",
+//     });
+//   }
+// });
+
+// let btnUpdateProductIn = document.getElementById("update-product-button");
+// btnUpdateProductIn.addEventListener("click", async (e) => {
+//   e.preventDefault();
+//   if (!currentEditingProductId) {
+//     toast({
+//       title: "Lỗi",
+//       message: "Không có sản phẩm nào đang được chọn để sửa.",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   const title = document.querySelector(".modal.add-product #ten-mon").value;
+//   const price = document.querySelector(".modal.add-product #gia-moi").value;
+//   const description = document.querySelector(".modal.add-product #mo-ta").value;
+//   const category = document.querySelector(".modal.add-product #chon-mon").value;
+//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
+
+//   if (!title || !price || !category) {
+//     toast({
+//       title: "Chú ý",
+//       message: "Tên món, giá và loại món là bắt buộc!",
+//       type: "warning",
+//     });
+//     return;
+//   }
+//   if (isNaN(parseFloat(price))) {
+//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
+//     return;
+//   }
+
+//   const formData = new FormData();
+//   formData.append("title", title);
+//   formData.append("price", parseFloat(price));
+//   formData.append("description", description);
+//   formData.append("category", category);
+//   formData.append("status", "1");
+
+//   if (fileInput.files.length > 0) {
+//     formData.append("imageFile", fileInput.files[0]);
+//     uploadedFile = fileInput.files[0]; // Sync uploadedFile
+//   }
+
+//   console.log('FormData contents:');
+//   for (let [key, value] of formData.entries()) {
+//     console.log(key, value);
+//   }
+
+//   try {
+//     await ApiService.updateProduct(currentEditingProductId, formData);
+//     toast({
+//       title: "Success",
+//       message: "Sửa sản phẩm thành công!",
+//       type: "success",
+//     });
+//     setDefaultProductFormValue();
+//     document.querySelector(".modal.add-product").classList.remove("open");
+//     await showProduct({ page: adminCurrentPage });
+//   } catch (error) {
+//     console.error("Error updating product:", error, error.status, error.data);
+//     toast({
+//       title: "Lỗi",
+//       message: error.data?.message || "Sửa sản phẩm thất bại.",
+//       type: "error",
+//     });
+//   }
+// });
+
 let btnUpdateProductIn = document.getElementById("update-product-button");
 btnUpdateProductIn.addEventListener("click", async (e) => {
   e.preventDefault();
@@ -368,6 +756,7 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
   const price = document.querySelector(".modal.add-product #gia-moi").value;
   const description = document.querySelector(".modal.add-product #mo-ta").value;
   const category = document.querySelector(".modal.add-product #chon-mon").value;
+  const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
 
   if (!title || !price || !category) {
     toast({
@@ -389,21 +778,32 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
   formData.append("category", category);
   formData.append("status", "1");
 
-  // formData.append("title", tenMon);
-  // formData.append("price", parseFloat(price));
-  // formData.append("description", moTa);
-  // formData.append("category", categoryText);
-  // formData.append("status", "1");
   if (fileInput.files.length > 0) {
-    formData.append("imageFile", fileInput.files[0]);
+    const file = fileInput.files[0];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Chú ý",
+        message: "Chỉ chấp nhận file ảnh JPEG hoặc PNG!",
+        type: "warning",
+      });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Chú ý",
+        message: "Kích thước file ảnh không được vượt quá 5MB!",
+        type: "warning",
+      });
+      return;
+    }
+    formData.append("imageFile", file);
+    uploadedFile = file; // Sync uploadedFile for consistency
   }
+
   console.log('FormData contents:');
   for (let [key, value] of formData.entries()) {
     console.log(key, value);
-  }
-
-  if (uploadedFile) {
-    formData.append("imageFile", uploadedFile);
   }
 
   try {
@@ -417,7 +817,7 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
     document.querySelector(".modal.add-product").classList.remove("open");
     await showProduct({ page: adminCurrentPage });
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("Error updating product:", error, error.status, error.data);
     toast({
       title: "Lỗi",
       message: error.data?.message || "Sửa sản phẩm thất bại.",

@@ -1247,42 +1247,42 @@ window.addEventListener("scroll", () => {
 })
 
 let currentProductsCache = [];
-async function renderProducts(showProduct) {
-    let productHtml = '';
-    if(!showProduct || showProduct.length == 0) {
-        document.getElementById("home-title").style.display = "none";
-        productHtml = `<div class="no-result"><div class="no-result-h">Tìm kiếm không có kết quả</div><div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div></div>`;
-    } else {
-        document.getElementById("home-title").style.display = "block";
-        showProduct.forEach((product) => {
-            productHtml += `<div class="col-product">
-            <article class="card-product" >
-                <div class="card-header">
-                    <a href="javascript:;" class="card-image-link" onclick="detailProduct(${product.id})">
-                    <img class="card-image" src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title}">
-                    </a>
-                </div>
-                <div class="food-info">
-                    <div class="card-content">
-                        <div class="card-title">
-                            <a href="javascript:;" class="card-title-link" onclick="detailProduct(${product.id})">${product.title}</a>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="product-price">
-                            <span class="current-price">${vnd(product.price)}</span>
-                        </div>
-                    <div class="product-buy">
-                        <button onclick="detailProduct(${product.id})" class="card-button order-item"><i class="fa-regular fa-cart-shopping-fast"></i> Đặt món</button>
-                    </div>
-                </div>
-                </div>
-            </article>
-        </div>`;
-        });
-    }
-    document.getElementById('home-products').innerHTML = productHtml;
-}
+// async function renderProducts(showProduct) {
+//     let productHtml = '';
+//     if(!showProduct || showProduct.length == 0) {
+//         document.getElementById("home-title").style.display = "none";
+//         productHtml = `<div class="no-result"><div class="no-result-h">Tìm kiếm không có kết quả</div><div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div></div>`;
+//     } else {
+//         document.getElementById("home-title").style.display = "block";
+//         showProduct.forEach((product) => {
+//             productHtml += `<div class="col-product">
+//             <article class="card-product" >
+//                 <div class="card-header">
+//                     <a href="javascript:;" class="card-image-link" onclick="detailProduct(${product.id})">
+//                     <img class="card-image" src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title}">
+//                     </a>
+//                 </div>
+//                 <div class="food-info">
+//                     <div class="card-content">
+//                         <div class="card-title">
+//                             <a href="javascript:;" class="card-title-link" onclick="detailProduct(${product.id})">${product.title}</a>
+//                         </div>
+//                     </div>
+//                     <div class="card-footer">
+//                         <div class="product-price">
+//                             <span class="current-price">${vnd(product.price)}</span>
+//                         </div>
+//                     <div class="product-buy">
+//                         <button onclick="detailProduct(${product.id})" class="card-button order-item"><i class="fa-regular fa-cart-shopping-fast"></i> Đặt món</button>
+//                     </div>
+//                 </div>
+//                 </div>
+//             </article>
+//         </div>`;
+//         });
+//     }
+//     document.getElementById('home-products').innerHTML = productHtml;
+// }
 
 // async function searchProducts(sortOption) {
 //     let valeSearchInput = document.querySelector('.form-search-input').value;
@@ -1503,6 +1503,89 @@ async function renderProducts(showProduct) {
 //         });
 //     }
 // }
+
+// async function renderProducts(showProduct) {
+//   let productHtml = '';
+//   if (!showProduct || showProduct.length == 0) {
+//     document.getElementById("home-title").style.display = "none";
+//     productHtml = `<div class="no-result"><div class="no-result-h">Tìm kiếm không có kết quả</div><div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div></div>`;
+//   } else {
+//     document.getElementById("home-title").style.display = "block";
+//     showProduct.forEach((product) => {
+//       let imgSrc = product.img_url || './assets/img/blank-image.png';
+//       // Prepend backend URL if imgSrc starts with /uploads
+//       if (imgSrc.startsWith('/uploads')) {
+//         imgSrc = `http://localhost:5000${imgSrc}`;
+//       }
+//       productHtml += `<div class="col-product">
+//         <article class="card-product" >
+//             <div class="card-header">
+//                 <a href="javascript:;" class="card-image-link" onclick="detailProduct(${product.id})">
+//                 <img class="card-image" src="${imgSrc}" alt="${product.title}">
+//                 </a>
+//             </div>
+//             <div class="food-info">
+//                 <div class="card-content">
+//                     <div class="card-title">
+//                         <a href="javascript:;" class="card-title-link" onclick="detailProduct(${product.id})">${product.title}</a>
+//                     </div>
+//                 </div>
+//                 <div class="card-footer">
+//                     <div class="product-price">
+//                         <span class="current-price">${vnd(product.price)}</span>
+//                     </div>
+//                 <div class="product-buy">
+//                     <button onclick="detailProduct(${product.id})" class="card-button order-item"><i class="fa-regular fa-cart-shopping-fast"></i> Đặt món</button>
+//                 </div>
+//             </div>
+//             </div>
+//         </article>
+//     </div>`;
+//     });
+//   }
+//   document.getElementById('home-products').innerHTML = productHtml;
+// }
+
+async function renderProducts(showProduct) {
+  let productHtml = '';
+  if (!showProduct || showProduct.length == 0) {
+    document.getElementById("home-title").style.display = "none";
+    productHtml = `<div class="no-result"><div class="no-result-h">Tìm kiếm không có kết quả</div><div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div></div>`;
+  } else {
+    document.getElementById("home-title").style.display = "block";
+    showProduct.forEach((product) => {
+      let imgSrc = product.img_url || './assets/img/blank-image.png';
+      if (imgSrc.startsWith('/uploads')) {
+        imgSrc = `http://localhost:5000${imgSrc}`;
+      }
+      productHtml += `<div class="col-product">
+        <article class="card-product">
+          <div class="card-header">
+            <a href="javascript:;" class="card-image-link" onclick="detailProduct(${product.id})">
+              <img class="card-image" src="${imgSrc}" alt="${product.title}">
+            </a>
+          </div>
+          <div class="food-info">
+            <div class="card-content">
+              <div class="card-title">
+                <a href="javascript:;" class="card-title-link" onclick="detailProduct(${product.id})">${product.title}</a>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="product-price">
+                <span class="current-price">${vnd(product.price)}</span>
+              </div>
+              <div class="product-buy">
+                <button onclick="detailProduct(${product.id})" class="card-button order-item"><i class="fa-regular fa-cart-shopping-fast"></i> Đặt món</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>`;
+    });
+  }
+  document.getElementById('home-products').innerHTML = productHtml;
+}
 
 async function searchProducts(sortOption) {
     let valeSearchInput = document.querySelector('.form-search-input').value.trim();
