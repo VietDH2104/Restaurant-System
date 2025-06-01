@@ -1,22 +1,32 @@
+// backend/src/models/productModel.js
 const { pool } = require('../configs/db');
 
 const Product = {
   async create(productData) {
-    const { title, img_url, category, price, description, status = 1 } = productData;
-    const sql = 'INSERT INTO products (title, img_url, category, price, description, status) VALUES (?, ?, ?, ?, ?, ?)';
-    const [result] = await pool.query(sql, [title, img_url, category, price, description, status]);
-    return { id: result.insertId, title, img_url, category, price, description, status };
+    const { title, image_data, category, price, description, status = 1 } = productData;
+    // img_url có thể được bỏ qua nếu không dùng nữa
+    const sql = 'INSERT INTO products (title, image_data, category, price, description, status) VALUES (?, ?, ?, ?, ?, ?)';
+    const [result] = await pool.query(sql, [title, image_data, category, price, description, status]);
+    return { id: result.insertId, title, category, price, description, status }; // Không trả image_data ở đây
+  },
+
+  async findImageById(id) {
+    const sql = 'SELECT image_data FROM products WHERE id = ?';
+    const [rows] = await pool.query(sql, [id]);
+    return rows[0]; // Trả về { image_data: Buffer } hoặc undefined
   },
 
   async findById(id) {
-    const sql = 'SELECT * FROM products WHERE id = ?';
+    // Không lấy image_data ở đây để tránh dữ liệu lớn
+    const sql = 'SELECT id, title, category, price, description, status, created_at, updated_at FROM products WHERE id = ?';
     const [rows] = await pool.query(sql, [id]);
     return rows[0];
   },
 
   async findAll(filters = {}) {
-    let baseSelectSql = 'SELECT * FROM products';
+    let baseSelectSql = 'SELECT id, title, category, price, description, status, created_at, updated_at FROM products'; // Không lấy image_data
     let countSelectSql = 'SELECT COUNT(*) as total FROM products';
+    // ... (logic whereClauses, queryParamsForWhere, count, order by như trước) ...
     let whereClauses = [];
     const queryParamsForWhere = [];
 
@@ -47,7 +57,7 @@ const Product = {
     }
 
     const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
-    
+
     countSelectSql += ` ${whereCondition}`;
     const [countRows] = await pool.query(countSelectSql, queryParamsForWhere);
     const total = countRows[0].total;
@@ -78,6 +88,7 @@ const Product = {
   },
 
   async update(id, productData) {
+    // Nếu productData có image_data thì sẽ được bao gồm trong fields
     const fields = Object.keys(productData);
     if (fields.length === 0) {
         return false;
@@ -92,12 +103,14 @@ const Product = {
   },
 
   async updateStatus(id, status) {
+    // ... (giữ nguyên) ...
     const sql = 'UPDATE products SET status = ?, updated_at = NOW() WHERE id = ?';
     const [result] = await pool.query(sql, [status, id]);
     return result.affectedRows > 0;
   },
 
   async countProducts() {
+    // ... (giữ nguyên) ...
     const sql = 'SELECT COUNT(*) as count FROM products WHERE status = 1';
     const [rows] = await pool.query(sql);
     return rows[0].count;

@@ -1,5 +1,16 @@
 const Product = require('../models/productModel');
 
+const transformProductForResponse = (product) => {
+  if (!product) return null;
+  const { image_data, ...productInfo } = product;
+  if (product.id) { 
+    productInfo.img_url = `/api/products/image/${product.id}`;
+  } else {
+    productInfo.img_url = null;
+  }
+  return productInfo;
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const { title, category, price: priceFromBody, description, status: statusFromBody } = req.body;
@@ -14,9 +25,9 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Giá sản phẩm là bắt buộc.' });
     }
 
-    let img_url = null;
-    if (req.file) {
-      img_url = `/uploads/${req.file.filename}`;
+    let imageData = null;
+    if (req.file && req.file.buffer) {
+      imageData = req.file.buffer;
     }
 
     let parsedPrice;
@@ -33,18 +44,47 @@ exports.createProduct = async (req, res) => {
 
     const productData = {
         title: String(title).trim(),
-        img_url: img_url,
+        image_data: imageData,
         category: String(category).trim(),
         price: parsedPrice,
         description: description ? String(description).trim() : null,
         status: status
     };
 
-    const product = await Product.create(productData);
-    res.status(201).json(product);
+    const createdProductRaw = await Product.create(productData);
+    const newProductWithId = await Product.findById(createdProductRaw.id);
+    res.status(201).json(transformProductForResponse(newProductWithId));
   } catch (error) {
     console.error('Lỗi tạo sản phẩm:', error);
+    if (error.code === 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD' || error.code === 'ER_DATA_TOO_LONG') {
+        return res.status(400).json({ message: 'Dữ liệu không hợp lệ hoặc quá dài cho một số trường.'});
+    }
     res.status(500).json({ message: 'Lỗi máy chủ khi tạo sản phẩm.', error: error.message });
+  }
+};
+
+exports.getProductImage = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const productWithImage = await Product.findImageById(productId);
+
+    if (productWithImage && productWithImage.image_data) {
+      let contentType = 'image/jpeg'; 
+      if (productWithImage.image_data[0] === 0xFF && productWithImage.image_data[1] === 0xD8) {
+        contentType = 'image/jpeg';
+      } else if (productWithImage.image_data[0] === 0x89 && productWithImage.image_data[1] === 0x50) {
+        contentType = 'image/png';
+      } else if (String(productWithImage.image_data.slice(0,4)) === 'RIFF' && String(productWithImage.image_data.slice(8,12)) === 'WEBP') {
+        contentType = 'image/webp';
+      }
+      res.setHeader('Content-Type', contentType);
+      res.send(productWithImage.image_data);
+    } else {
+      res.status(404).send('Image not found');
+    }
+  } catch (error) {
+    console.error('Lỗi lấy ảnh sản phẩm:', error);
+    res.status(500).send('Server error when fetching image');
   }
 };
 
@@ -92,8 +132,10 @@ exports.getAllProducts = async (req, res) => {
         offset
     };
     const { products, total } = await Product.findAll(filters);
+    const transformedProducts = products.map(transformProductForResponse);
+
     res.json({
-        data: products,
+        data: transformedProducts,
         pagination: {
             currentPage: parseInt(page, 10),
             limit: parseInt(limit, 10),
@@ -134,8 +176,9 @@ exports.getAllProductsAdmin = async (req, res) => {
           offset
       };
       const { products, total } = await Product.findAll(filters);
+      const transformedProducts = products.map(transformProductForResponse);
       res.json({
-          data: products,
+          data: transformedProducts,
           pagination: {
               currentPage: parseInt(page, 10),
               limit: parseInt(limit, 10),
@@ -158,7 +201,7 @@ exports.getProductById = async (req, res) => {
     if ((!req.user || req.user.userType !== 1) && product.status !== 1) {
         return res.status(404).json({ message: 'Sản phẩm không tìm thấy hoặc không có sẵn.' });
     }
-    res.json(product);
+    res.json(transformProductForResponse(product));
   } catch (error) {
     console.error('Lỗi lấy chi tiết sản phẩm:', error);
     res.status(500).json({ message: 'Lỗi máy chủ khi lấy chi tiết sản phẩm.', error: error.message });
@@ -169,10 +212,10 @@ exports.updateProduct = async (req, res) => {
   try {
     const { title, category, description, status } = req.body;
     const priceFromBody = req.body.price;
-    let new_img_url;
+    let imageData;
 
-    if (req.file) {
-        new_img_url = `/uploads/${req.file.filename}`;
+    if (req.file && req.file.buffer) {
+        imageData = req.file.buffer;
     }
 
     let parsedPrice;
@@ -194,11 +237,9 @@ exports.updateProduct = async (req, res) => {
     if (status !== undefined && !isNaN(parseInt(status,10))) productDataToUpdate.status = parseInt(status,10);
 
     if (req.file) {
-        productDataToUpdate.img_url = new_img_url;
-    } else if (req.body.img_url_hidden === 'null' || req.body.remove_image === 'true') {
-        productDataToUpdate.img_url = null;
-    } else if (req.body.img_url_hidden) {
-        productDataToUpdate.img_url = req.body.img_url_hidden;
+        productDataToUpdate.image_data = imageData;
+    } else if (req.body.remove_image === 'true') {
+        productDataToUpdate.image_data = null;
     }
 
     if (Object.keys(productDataToUpdate).length === 0 ) {
@@ -228,9 +269,13 @@ exports.updateProduct = async (req, res) => {
     if (!updated) {
       return res.status(404).json({ message: 'Sản phẩm không tìm thấy hoặc không có thay đổi nào được thực hiện.' });
     }
-    res.json({ message: 'Sản phẩm được cập nhật thành công.' });
+    const updatedProduct = await Product.findById(req.params.id); 
+    res.json(transformProductForResponse(updatedProduct));
   } catch (error) {
     console.error('Lỗi cập nhật sản phẩm:', error);
+    if (error.code === 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD' || error.code === 'ER_DATA_TOO_LONG') {
+        return res.status(400).json({ message: 'Dữ liệu không hợp lệ hoặc quá dài cho một số trường khi cập nhật.'});
+    }
     res.status(500).json({ message: 'Lỗi máy chủ khi cập nhật sản phẩm.', error: error.message });
   }
 };
@@ -238,7 +283,7 @@ exports.updateProduct = async (req, res) => {
 exports.updateProductStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        if (status === undefined || (status !== 0 && status !== 1 && status !== '0' && status !== '1')) {
+        if (status === undefined || (status != 0 && status != 1 && status != '0' && status != '1')) {
             return res.status(400).json({ message: 'Giá trị trạng thái không hợp lệ. Phải là 0 hoặc 1.' });
         }
         const numericStatus = parseInt(status, 10);

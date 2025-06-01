@@ -1,4 +1,6 @@
 // Doi sang dinh dang tien VND
+const BACKEND_URL = 'http://localhost:5000';
+
 function vnd(price) {
     if (typeof price !== 'number') {
         price = parseFloat(price) || 0;
@@ -886,25 +888,56 @@ window.addEventListener("scroll", () => {
 })
 
 let currentProductsCache = [];
-async function renderProducts(showProduct) {
+async function renderProducts(showProduct) { // Đổi tên tham số nếu cần, hoặc đổi tên hàm nếu có nhiều hàm render
     let productHtml = '';
+    const homeProductsElement = document.getElementById('home-products'); // Phần tử để chèn HTML sản phẩm
+
+    if (!homeProductsElement) {
+        console.error("MAIN.JS: Lỗi - Không tìm thấy phần tử #home-products.");
+        return;
+    }
+
     if(!showProduct || showProduct.length == 0) {
-        document.getElementById("home-title").style.display = "none";
+        const homeTitleElement = document.getElementById("home-title");
+        if (homeTitleElement) homeTitleElement.style.display = "none";
         productHtml = `<div class="no-result"><div class="no-result-h">Tìm kiếm không có kết quả</div><div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div></div>`;
     } else {
-        document.getElementById("home-title").style.display = "block";
+        const homeTitleElement = document.getElementById("home-title");
+        if (homeTitleElement) homeTitleElement.style.display = "block";
+
         showProduct.forEach((product) => {
+            let imageUrl = './assets/img/blank-image.png'; // Ảnh mặc định
+
+            // product.img_url từ API backend giờ đây sẽ là /api/products/image/ID
+            // nếu bạn đang dùng cách lưu BLOB và phục vụ qua API.
+            // Hoặc là /uploads/tenfile.jpg nếu bạn dùng cách lưu file tĩnh.
+            // Điều quan trọng là nó là đường dẫn tương đối từ gốc backend.
+
+            if (product.img_url && typeof product.img_url === 'string' && product.img_url.trim() !== "") {
+                if (product.img_url.startsWith('http://') || product.img_url.startsWith('https://')) {
+                    imageUrl = product.img_url;
+                } else {
+                    let relativePath = product.img_url;
+                    if (!relativePath.startsWith('/')) {
+                        relativePath = '/' + relativePath;
+                    }
+                    imageUrl = BACKEND_URL + relativePath; // NỐI VỚI BACKEND_URL
+                }
+            }
+
+            // console.log(`MAIN.JS - Sản phẩm: "${product.title}", URL ảnh sẽ dùng: "${imageUrl}"`); // Bật để debug
+
             productHtml += `<div class="col-product">
             <article class="card-product" >
                 <div class="card-header">
                     <a href="javascript:;" class="card-image-link" onclick="detailProduct(${product.id})">
-                    <img class="card-image" src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title}">
+                    <img class="card-image" src="${imageUrl}" alt="${product.title || 'Sản phẩm'}">
                     </a>
                 </div>
                 <div class="food-info">
                     <div class="card-content">
                         <div class="card-title">
-                            <a href="javascript:;" class="card-title-link" onclick="detailProduct(${product.id})">${product.title}</a>
+                            <a href="javascript:;" class="card-title-link" onclick="detailProduct(${product.id})">${product.title || '(Chưa có tên)'}</a>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -920,7 +953,7 @@ async function renderProducts(showProduct) {
         </div>`;
         });
     }
-    document.getElementById('home-products').innerHTML = productHtml;
+    homeProductsElement.innerHTML = productHtml;
 }
 
 async function searchProducts(sortOption) {

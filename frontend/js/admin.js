@@ -1,3 +1,5 @@
+const BACKEND_URL = 'http://localhost:5000';
+
 async function checkLogin() {
     const currentUser = ApiService.getCurrentUser();
     if(currentUser == null || currentUser.userType !== 1) {
@@ -7,7 +9,8 @@ async function checkLogin() {
         </div>`;
         return false;
     } else {
-        document.getElementById("name-acc").innerHTML = currentUser.fullname;
+        const nameAccEl = document.getElementById("name-acc");
+        if (nameAccEl) nameAccEl.innerHTML = currentUser.fullname;
         return true;
     }
 }
@@ -32,10 +35,7 @@ for(let i = 0; i < sidebars.length; i++) {
         if(currentActiveSection) currentActiveSection.classList.remove("active");
 
         sidebars[i].classList.add("active");
-        sections[i].classList.add("active");
-
-        if (window.innerWidth < 768 && sidebar && sidebar.classList.contains("open")) {
-        }
+        if (sections[i]) sections[i].classList.add("active");
     };
 }
 
@@ -44,6 +44,7 @@ if (sidebar && contentContainer) {
     contentContainer.addEventListener('click', (e) => {
         if (window.innerWidth < 1024 && sidebar.classList.contains('open')) {
             if (menuIconButton && !menuIconButton.contains(e.target)) {
+                // sidebar.classList.remove('open');
             }
         }
     });
@@ -52,12 +53,16 @@ if (sidebar && contentContainer) {
 async function loadDashboardStats() {
     try {
         const stats = await ApiService.fetchAdminStats();
-        document.getElementById("amount-user").innerHTML = stats.totalCustomers || 0;
-        document.getElementById("amount-product").innerHTML = stats.totalProducts || 0;
-        document.getElementById("doanh-thu").innerHTML = vnd(stats.totalRevenue || 0);
+        const amountUserEl = document.getElementById("amount-user");
+        const amountProductEl = document.getElementById("amount-product");
+        const doanhThuEl = document.getElementById("doanh-thu");
+
+        if (amountUserEl) amountUserEl.innerHTML = stats.totalCustomers || 0;
+        if (amountProductEl) amountProductEl.innerHTML = stats.totalProducts || 0;
+        if (doanhThuEl) doanhThuEl.innerHTML = vnd(stats.totalRevenue || 0);
     } catch (error) {
         console.error("Error loading dashboard stats:", error);
-        toast({ title: "Lỗi", message: "Không thể tải dữ liệu tổng quan.", type: "error" });
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không thể tải dữ liệu tổng quan.", type: "error" });
     }
 }
 
@@ -87,7 +92,7 @@ function setupAdminPagination(totalItems, perPage, activePage, sectionType, curr
     }
 
     if (!pageNavList) {
-        if (sectionType !== 'user' && sectionType !== 'dashboard') {
+        if (sectionType !== 'user' && sectionType !== 'dashboard' && sectionType !== 'order' && sectionType !== 'stats') {
             console.warn("Pagination list element not found for section:", sectionType);
         }
         return;
@@ -130,7 +135,10 @@ function getCurrentSortModeForStats() {
 async function showProductArr(arr) {
     let productHtml = "";
     const productShowElement = document.getElementById("show-product");
-    if (!productShowElement) return;
+
+    if (!productShowElement) {
+        return;
+    }
 
     if(!arr || arr.length == 0) {
         productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
@@ -139,262 +147,25 @@ async function showProductArr(arr) {
             let btnCtl = product.status == 1 ?
             `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>` :
             `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+
+            let imageUrl = './assets/img/blank-image.png';
+
+            if (product.img_url && typeof product.img_url === 'string' && product.img_url.trim() !== "") {
+                if (product.img_url.startsWith('http://') || product.img_url.startsWith('https://')) {
+                    imageUrl = product.img_url;
+                } else {
+                    let relativePath = product.img_url;
+                    if (!relativePath.startsWith('/')) {
+                        relativePath = '/' + relativePath;
+                    }
+                    imageUrl = BACKEND_URL + relativePath;
+                }
+            }
+
             productHtml += `
             <div class="list">
                 <div class="list-left">
-                    <img src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title}">
-                    <div class="list-info">
-                        <h4>${product.title}</h4>
-                        <p class="list-note">${product.description || ''}</p>
-                        <span class="list-category">${product.category}</span>
-                    </div>
-                </div>
-                <div class="list-right">
-                    <div class="list-price">
-                    <span class="list-current-price">${vnd(product.price)}</span>
-                    </div>
-                    <div class="list-control">
-                    <div class="list-tool">
-                        <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
-                        ${btnCtl}
-                    </div>
-                </div>
-                </div>
-            </div>`;
-        });
-    }
-    productShowElement.innerHTML = productHtml;
-}
-
-async function showProduct(externalFilters = {}) {
-    let selectOp = document.getElementById('the-loai').value;
-    let valeSearchInput = document.getElementById('form-search-product').value;
-
-    const params = {
-        page: adminCurrentPage,
-        limit: adminPerPage,
-        ...externalFilters
-    };
-
-    if (selectOp && selectOp !== "Tất cả" && selectOp !== "Đã xóa") {
-        params.category = selectOp;
-    }
-    if (valeSearchInput) {
-        params.search = valeSearchInput;
-    }
-    if (selectOp === "Đã xóa") {
-        params.status = 0;
-    } else if (selectOp !== "Tất cả" && selectOp !== "Đã xóa"){ // Specific category implies active unless "Đã xóa"
-        params.status = 1;
-    } // If "Tất cả", no status filter is sent, backend shows all.
-
-    try {
-        const response = await ApiService.fetchAdminProducts(params);
-        showProductArr(response.data);
-        setupAdminPagination(response.pagination.totalItems, adminPerPage, response.pagination.currentPage, 'product', params);
-    } catch (error) {
-        console.error("Error fetching admin products:", error);
-        toast({ title: "Lỗi", message: "Không thể tải danh sách sản phẩm.", type: "error" });
-        const productShowElement = document.getElementById("show-product");
-        if (productShowElement) productShowElement.innerHTML = `<p style="text-align:center;">Lỗi tải sản phẩm.</p>`;
-    }
-}
-
-async function cancelSearchProduct() {
-    document.getElementById('the-loai').value = "Tất cả";
-    document.getElementById('form-search-product').value = "";
-    adminCurrentPage = 1;
-    await showProduct();
-}
-
-async function updateProductStatus(productId, newStatus, element) {
-    const actionText = newStatus === 0 ? "xóa (ẩn)" : "khôi phục";
-    const confirmAction = confirm(`Bạn có chắc muốn ${actionText} sản phẩm này?`);
-    if (confirmAction) {
-        try {
-            await ApiService.updateProductStatus(productId, newStatus);
-            toast({ title: 'Thành công', message: `Sản phẩm đã được ${actionText}.`, type: 'success' });
-            await showProduct({page: adminCurrentPage});
-        } catch (error) {
-            console.error(`Error ${actionText} product:`, error);
-            toast({ title: 'Lỗi', message: `Không thể ${actionText} sản phẩm.`, type: 'error' });
-        }
-    }
-}
-
-var currentEditingProductId = null;
-async function editProduct(id) {
-    try {
-        const product = await ApiService.fetchProductById(id);
-        if (!product) {
-            toast({ title: "Lỗi", message: "Không tìm thấy sản phẩm.", type: "error"});
-            return;
-        }
-        currentEditingProductId = product.id;
-
-        document.querySelectorAll(".add-product-e").forEach(item => item.style.display = "none");
-        document.querySelectorAll(".edit-product-e").forEach(item => item.style.display = "block");
-        document.querySelector(".modal.add-product").classList.add("open");
-
-        document.querySelector(".modal.add-product .upload-image-preview").src = product.img_url || './assets/img/blank-image.png';
-        document.querySelector(".modal.add-product #ten-mon").value = product.title;
-        document.querySelector(".modal.add-product #gia-moi").value = product.price;
-        document.querySelector(".modal.add-product #mo-ta").value = product.description || '';
-        document.querySelector(".modal.add-product #chon-mon").value = product.category;
-        document.querySelector(".modal.add-product .upload-image-preview").dataset.originalUrl = product.img_url || '';
-        uploadedFile = null;
-
-    } catch (error) {
-        console.error("Error fetching product for edit:", error);
-        toast({ title: "Lỗi", message: "Không thể tải thông tin sản phẩm để sửa.", type: "error" });
-    }
-}
-
-let uploadedFile = null;
-function uploadImage(el) {
-    if (el.files && el.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const previewImage = document.querySelector(".modal.add-product .upload-image-preview");
-            if (previewImage) {
-                previewImage.setAttribute("src", e.target.result);
-            }
-        }
-        reader.readAsDataURL(el.files[0]);
-        uploadedFile = el.files[0];
-    } else {
-        uploadedFile = null;
-        const previewImage = document.querySelector(".modal.add-product .upload-image-preview");
-        if (previewImage) {
-            const originalUrl = previewImage.dataset.originalUrl;
-            if (originalUrl) {
-                previewImage.setAttribute("src", originalUrl);
-            } else {
-                previewImage.setAttribute("src", './assets/img/blank-image.png');
-            }
-        }
-    }
-}
-
-let btnUpdateProductIn = document.getElementById("update-product-button");
-btnUpdateProductIn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    if (!currentEditingProductId) {
-        toast({ title: "Lỗi", message: "Không có sản phẩm nào đang được chọn để sửa.", type: "warning" });
-        return;
-    }
-    const title = document.querySelector(".modal.add-product #ten-mon").value;
-    const price = document.querySelector(".modal.add-product #gia-moi").value;
-    const description = document.querySelector(".modal.add-product #mo-ta").value;
-    const category = document.querySelector(".modal.add-product #chon-mon").value;
-
-    if (!title || !price || !category) {
-        toast({ title: "Chú ý", message: "Tên món, giá và loại món là bắt buộc!", type: "warning" });
-        return;
-    }
-    if (isNaN(parseFloat(price))) {
-        toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('price', parseFloat(price));
-    formData.append('description', description);
-    formData.append('category', category);
-
-    if (uploadedFile) {
-        formData.append('imageFile', uploadedFile);
-    }
-
-    try {
-        await ApiService.updateProduct(currentEditingProductId, formData);
-        toast({ title: "Success", message: "Sửa sản phẩm thành công!", type: "success" });
-        setDefaultProductFormValue();
-        document.querySelector(".modal.add-product").classList.remove("open");
-        await showProduct({page: adminCurrentPage});
-    } catch (error) {
-        console.error("Error updating product:", error);
-        toast({ title: "Lỗi", message: error.data?.message || "Sửa sản phẩm thất bại.", type: "error" });
-    }
-});
-
-let btnAddProductIn = document.getElementById("add-product-button");
-if (btnAddProductIn) { // Kiểm tra xem phần tử có tồn tại không
-    btnAddProductIn.addEventListener("click", async (e) => {
-        e.preventDefault();
-
-        const tenMon = document.querySelector(".modal.add-product #ten-mon").value.trim();
-        const priceStr = document.querySelector(".modal.add-product #gia-moi").value.trim();
-        const moTa = document.querySelector(".modal.add-product #mo-ta").value.trim();
-        const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
-
-        if (tenMon === "") {
-            toast({ title: "Chú ý", message: "Vui lòng nhập tên món!", type: "warning" });
-            document.querySelector(".modal.add-product #ten-mon").focus();
-            return;
-        }
-        if (categoryText === "" || categoryText === null) {
-            toast({ title: "Chú ý", message: "Vui lòng chọn loại món!", type: "warning" });
-            document.querySelector(".modal.add-product #chon-mon").focus();
-            return;
-        }
-        if (priceStr === "") {
-            toast({ title: "Chú ý", message: "Vui lòng nhập giá bán!", type: "warning" });
-            document.querySelector(".modal.add-product #gia-moi").focus();
-            return;
-        }
-
-        const priceValue = parseFloat(priceStr);
-        if (isNaN(priceValue) || priceValue < 0) {
-            toast({ title: "Chú ý", message: "Giá bán không hợp lệ!", type: "warning" });
-            document.querySelector(".modal.add-product #gia-moi").focus();
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('title', tenMon);
-        formData.append('price', priceValue);
-        formData.append('category', categoryText);
-        if (moTa) {
-            formData.append('description', moTa);
-        }
-        formData.append('status', 1);
-
-        if (uploadedFile) {
-            formData.append('imageFile', uploadedFile);
-        }
-
-        try {
-            await ApiService.createProduct(formData);
-            toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
-            setDefaultProductFormValue();
-            document.querySelector(".modal.add-product").classList.remove("open");
-            adminCurrentPage = 1;
-            await showProduct();
-        } catch (error) {
-            console.error("Error adding product:", error);
-            toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
-        }
-    });
-}
-
-async function showProductArr(arr) {
-    let productHtml = "";
-    const productShowElement = document.getElementById("show-product");
-    if (!productShowElement) return;
-
-    if(!arr || arr.length == 0) {
-        productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
-    } else {
-        arr.forEach(product => {
-            let btnCtl = product.status == 1 ?
-            `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>` :
-            `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
-            productHtml += `
-            <div class="list">
-                <div class="list-left">
-                    <img src="${product.img_url || './assets/img/blank-image.png'}" alt="${product.title || 'Sản phẩm không tên'}">
+                    <img src="${imageUrl}" alt="${product.title || 'Sản phẩm không tên'}" style="width: 100px; height: 100px; object-fit: cover;">
                     <div class="list-info">
                         <h4>${product.title || '(Chưa có tên)'}</h4>
                         <p class="list-note">${product.description || '(Chưa có mô tả)'}</p>
@@ -417,6 +188,268 @@ async function showProductArr(arr) {
     }
     productShowElement.innerHTML = productHtml;
 }
+
+async function showProduct(externalFilters = {}) {
+    let selectOpEl = document.getElementById('the-loai');
+    let searchInputEl = document.getElementById('form-search-product');
+    let selectOp = selectOpEl ? selectOpEl.value : "Tất cả";
+    let valeSearchInput = searchInputEl ? searchInputEl.value : "";
+
+
+    const params = {
+        page: adminCurrentPage,
+        limit: adminPerPage,
+        ...externalFilters
+    };
+
+    if (selectOp && selectOp !== "Tất cả" && selectOp !== "Đã xóa") {
+        params.category = selectOp;
+    }
+    if (valeSearchInput) {
+        params.search = valeSearchInput;
+    }
+    if (selectOp === "Đã xóa") {
+        params.status = 0;
+    } else if (selectOp !== "Tất cả" && selectOp !== "Đã xóa"){
+        params.status = 1;
+    }
+
+    try {
+        const response = await ApiService.fetchAdminProducts(params);
+        showProductArr(response.data);
+        if (response.pagination && typeof setupAdminPagination === 'function') {
+            setupAdminPagination(response.pagination.totalItems, adminPerPage, response.pagination.currentPage, 'product', params);
+        }
+    } catch (error) {
+        console.error("Error fetching admin products:", error);
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không thể tải danh sách sản phẩm.", type: "error" });
+        const productShowElement = document.getElementById("show-product");
+        if (productShowElement) productShowElement.innerHTML = `<p style="text-align:center;">Lỗi tải sản phẩm.</p>`;
+    }
+}
+
+async function cancelSearchProduct() {
+    const theLoaiEl = document.getElementById('the-loai');
+    const formSearchProductEl = document.getElementById('form-search-product');
+    if(theLoaiEl) theLoaiEl.value = "Tất cả";
+    if(formSearchProductEl) formSearchProductEl.value = "";
+    adminCurrentPage = 1;
+    await showProduct();
+}
+
+async function updateProductStatus(productId, newStatus, element) {
+    const actionText = newStatus === 0 ? "xóa (ẩn)" : "khôi phục";
+    const confirmAction = confirm(`Bạn có chắc muốn ${actionText} sản phẩm này?`);
+    if (confirmAction) {
+        try {
+            await ApiService.updateProductStatus(productId, newStatus);
+            if (typeof toast === 'function') toast({ title: 'Thành công', message: `Sản phẩm đã được ${actionText}.`, type: 'success' });
+            await showProduct({page: adminCurrentPage});
+        } catch (error) {
+            console.error(`Error ${actionText} product:`, error);
+            if (typeof toast === 'function') toast({ title: 'Lỗi', message: `Không thể ${actionText} sản phẩm.`, type: 'error' });
+        }
+    }
+}
+
+var currentEditingProductId = null;
+async function editProduct(id) {
+    try {
+        const product = await ApiService.fetchProductById(id);
+        if (!product) {
+            if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không tìm thấy sản phẩm.", type: "error"});
+            return;
+        }
+        currentEditingProductId = product.id;
+        
+        const addProductModal = document.querySelector(".modal.add-product");
+        if (!addProductModal) return;
+
+        addProductModal.querySelectorAll(".add-product-e").forEach(item => item.style.display = "none");
+        addProductModal.querySelectorAll(".edit-product-e").forEach(item => item.style.display = "block");
+        addProductModal.classList.add("open");
+
+        const previewImg = addProductModal.querySelector(".upload-image-preview");
+        const tenMonInput = addProductModal.querySelector("#ten-mon");
+        const giaMoiInput = addProductModal.querySelector("#gia-moi");
+        const moTaInput = addProductModal.querySelector("#mo-ta");
+        const chonMonSelect = addProductModal.querySelector("#chon-mon");
+
+        if (previewImg) {
+            let currentImageUrl = './assets/img/blank-image.png';
+            if (product.img_url) {
+                 currentImageUrl = BACKEND_URL + product.img_url;
+            }
+            previewImg.src = currentImageUrl;
+            previewImg.dataset.originalUrl = currentImageUrl;
+        }
+        if (tenMonInput) tenMonInput.value = product.title || "";
+        if (giaMoiInput) giaMoiInput.value = product.price || "";
+        if (moTaInput) moTaInput.value = product.description || "";
+        if (chonMonSelect) chonMonSelect.value = product.category || "";
+        
+        uploadedFile = null;
+
+    } catch (error) {
+        console.error("Error fetching product for edit:", error);
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không thể tải thông tin sản phẩm để sửa.", type: "error" });
+    }
+}
+
+let uploadedFile = null;
+function uploadImage(el) {
+    if (el.files && el.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const previewImage = document.querySelector(".modal.add-product .upload-image-preview");
+            if (previewImage) {
+                previewImage.setAttribute("src", e.target.result);
+            }
+        }
+        reader.readAsDataURL(el.files[0]);
+        uploadedFile = el.files[0];
+    } else {
+        uploadedFile = null;
+        const previewImage = document.querySelector(".modal.add-product .upload-image-preview");
+        if (previewImage) {
+            const originalUrl = previewImage.dataset.originalUrl;
+            if (originalUrl && originalUrl !== './assets/img/blank-image.png') {
+                previewImage.setAttribute("src", originalUrl);
+            } else {
+                previewImage.setAttribute("src", './assets/img/blank-image.png');
+            }
+        }
+    }
+}
+
+const btnUpdateProductIn = document.getElementById("update-product-button");
+if(btnUpdateProductIn) {
+    btnUpdateProductIn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (!currentEditingProductId) {
+            if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không có sản phẩm nào đang được chọn để sửa.", type: "warning" });
+            return;
+        }
+        const modal = document.querySelector(".modal.add-product");
+        const title = modal.querySelector("#ten-mon").value;
+        const priceStr = modal.querySelector("#gia-moi").value;
+        const description = modal.querySelector("#mo-ta").value;
+        const category = modal.querySelector("#chon-mon").value;
+        const statusInput = modal.querySelector("#product-status-edit"); // Cần input này nếu muốn sửa status
+        const status = statusInput ? statusInput.value : undefined;
+
+
+        if (!title.trim() || !priceStr.trim() || !category) {
+            if (typeof toast === 'function') toast({ title: "Chú ý", message: "Tên món, giá và loại món là bắt buộc!", type: "warning" });
+            return;
+        }
+        const priceValue = parseFloat(priceStr);
+        if (isNaN(priceValue) || priceValue < 0) {
+            if (typeof toast === 'function') toast({ title: "Chú ý", message: "Giá phải là số không âm!", type: "warning" });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', title.trim());
+        formData.append('price', priceValue);
+        formData.append('category', category);
+        if (description.trim()) formData.append('description', description.trim());
+        if (status !== undefined) formData.append('status', status);
+
+        const previewImageSrc = modal.querySelector(".upload-image-preview").src;
+        const originalUrlDataSet = modal.querySelector(".upload-image-preview").dataset.originalUrl;
+
+
+        if (uploadedFile) {
+            formData.append('imageFile', uploadedFile);
+        } else if (previewImageSrc.includes('blank-image.png') && originalUrlDataSet && originalUrlDataSet !=='./assets/img/blank-image.png' && !originalUrlDataSet.includes('blank-image.png') ) {
+             formData.append('remove_image', 'true');
+        } else if (originalUrlDataSet && !previewImageSrc.includes('data:image') && originalUrlDataSet !== './assets/img/blank-image.png') {
+             formData.append('img_url_hidden', originalUrlDataSet.replace(BACKEND_URL, ''));
+        }
+
+        try {
+            await ApiService.updateProduct(currentEditingProductId, formData);
+            if (typeof toast === 'function') toast({ title: "Success", message: "Sửa sản phẩm thành công!", type: "success" });
+            setDefaultProductFormValue();
+            modal.classList.remove("open");
+            await showProduct({page: adminCurrentPage});
+        } catch (error) {
+            console.error("Error updating product:", error);
+            if (typeof toast === 'function') toast({ title: "Lỗi", message: error.data?.message || "Sửa sản phẩm thất bại.", type: "error" });
+        }
+    });
+}
+
+const btnAddProductInReal = document.querySelector(".modal.add-product .form-submit.btn-add-product-form");
+if (btnAddProductInReal) {
+    btnAddProductInReal.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const modal = document.querySelector(".modal.add-product");
+        const tenMonInput = modal.querySelector("#ten-mon");
+        const tenMon = tenMonInput ? tenMonInput.value.trim() : "";
+
+        const priceStrInput = modal.querySelector("#gia-moi");
+        const priceStr = priceStrInput ? priceStrInput.value.trim() : "";
+
+        const moTaInput = modal.querySelector("#mo-ta");
+        const moTa = moTaInput ? moTaInput.value.trim() : "";
+
+        const categorySelect = modal.querySelector("#chon-mon");
+        const categoryText = categorySelect ? categorySelect.value : "";
+
+
+        if (tenMon === "") {
+            if (typeof toast === 'function') toast({ title: "Chú ý", message: "Vui lòng nhập tên món!", type: "warning" });
+            if (tenMonInput) tenMonInput.focus();
+            return;
+        }
+        if (categoryText === "" || categoryText === null) {
+            if (typeof toast === 'function') toast({ title: "Chú ý", message: "Vui lòng chọn loại món!", type: "warning" });
+            if (categorySelect) categorySelect.focus();
+            return;
+        }
+        if (priceStr === "") {
+            if (typeof toast === 'function') toast({ title: "Chú ý", message: "Vui lòng nhập giá bán!", type: "warning" });
+            if (priceStrInput) priceStrInput.focus();
+            return;
+        }
+
+        const priceValue = parseFloat(priceStr);
+        if (isNaN(priceValue) || priceValue < 0) {
+            if (typeof toast === 'function') toast({ title: "Chú ý", message: "Giá bán không hợp lệ!", type: "warning" });
+            if (priceStrInput) priceStrInput.focus();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', tenMon);
+        formData.append('price', priceValue);
+        formData.append('category', categoryText);
+        if (moTa) {
+            formData.append('description', moTa);
+        }
+        formData.append('status', 1);
+
+        if (uploadedFile) {
+            formData.append('imageFile', uploadedFile);
+        }
+
+        try {
+            await ApiService.createProduct(formData);
+            if (typeof toast === 'function') toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
+            setDefaultProductFormValue();
+            modal.classList.remove("open");
+            adminCurrentPage = 1;
+            await showProduct();
+        } catch (error) {
+            console.error("Error adding product:", error);
+            if (typeof toast === 'function') toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
+        }
+    });
+}
+
 
 const productModalCloseButton = document.querySelector(".modal.add-product .modal-close.product-form");
 if (productModalCloseButton) {
@@ -454,13 +487,19 @@ function setDefaultProductFormValue() {
     currentEditingProductId = null;
 }
 
-let btnAddProduct = document.getElementById("btn-add-product");
-btnAddProduct.addEventListener("click", () => {
-    setDefaultProductFormValue();
-    document.querySelectorAll(".add-product-e").forEach(item => item.style.display = "block");
-    document.querySelectorAll(".edit-product-e").forEach(item => item.style.display = "none");
-    document.querySelector(".modal.add-product").classList.add("open");
-});
+const btnAddProduct = document.getElementById("btn-add-product");
+if (btnAddProduct){
+    btnAddProduct.addEventListener("click", () => {
+        setDefaultProductFormValue();
+        const addProductModal = document.querySelector(".modal.add-product");
+        if(addProductModal){
+            addProductModal.querySelectorAll(".add-product-e").forEach(item => item.style.display = "block");
+            addProductModal.querySelectorAll(".edit-product-e").forEach(item => item.style.display = "none");
+            addProductModal.classList.add("open");
+        }
+    });
+}
+
 
 let closePopupButtons = document.querySelectorAll(".modal .modal-close");
 closePopupButtons.forEach(button => {
@@ -485,7 +524,7 @@ closePopupButtons.forEach(button => {
 async function changeOrderStatusInDetail(orderId, newStatus, el) {
     try {
         await ApiService.updateOrderStatus(orderId, newStatus);
-        toast({ title: "Thành công", message: "Cập nhật trạng thái đơn hàng thành công.", type: "success" });
+        if (typeof toast === 'function') toast({ title: "Thành công", message: "Cập nhật trạng thái đơn hàng thành công.", type: "success" });
         if (el) {
             const willBeProcessed = newStatus === 1;
             el.textContent = willBeProcessed ? "Hủy xử lý" : "Xử lý đơn";
@@ -496,7 +535,7 @@ async function changeOrderStatusInDetail(orderId, newStatus, el) {
         await findOrder({page: adminCurrentPage});
     } catch (error) {
         console.error("Error updating order status:", error);
-        toast({ title: "Lỗi", message: "Cập nhật trạng thái thất bại.", type: "error" });
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Cập nhật trạng thái thất bại.", type: "error" });
     }
 }
 
@@ -543,7 +582,7 @@ async function detailOrderAdmin(orderId) {
     try {
         const order = await ApiService.fetchOrderById(orderId);
         if (!order) {
-            toast({ title: "Lỗi", message: "Không tìm thấy đơn hàng.", type: "error" });
+            if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không tìm thấy đơn hàng.", type: "error" });
             return;
         }
         const detailOrderModal = document.querySelector(".modal.detail-order");
@@ -554,9 +593,14 @@ async function detailOrderAdmin(orderId) {
 
         if (order.items && order.items.length > 0) {
             order.items.forEach((item) => {
+                let itemImageUrl = './assets/img/blank-image.png';
+                if(item.product_img_url) {
+                    itemImageUrl = BACKEND_URL + item.product_img_url;
+                }
+
                 spHtml += `<div class="order-product">
                     <div class="order-product-left">
-                        <img src="${item.product_img_url || './assets/img/blank-image.png'}" alt="${item.product_title}">
+                        <img src="${itemImageUrl}" alt="${item.product_title || 'Sản phẩm'}">
                         <div class="order-product-info">
                             <h4>${item.product_title}</h4>
                             <p class="order-product-note"><i class="fa-light fa-pen"></i> ${item.item_notes || 'Không có ghi chú'}</p>
@@ -638,15 +682,21 @@ async function detailOrderAdmin(orderId) {
         }
     } catch (error) {
         console.error("Error fetching order detail for admin:", error);
-        toast({ title: "Lỗi", message: "Không thể tải chi tiết đơn hàng.", type: "error" });
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không thể tải chi tiết đơn hàng.", type: "error" });
     }
 }
 
 async function findOrder(externalFilters = {}) {
-    let tinhTrangValue = document.getElementById("tinh-trang").value;
-    let searchValue = document.getElementById("form-search-order").value;
-    let timeStartValue = document.getElementById("time-start").value;
-    let timeEndValue = document.getElementById("time-end").value;
+    let tinhTrangValueEl = document.getElementById("tinh-trang");
+    let searchValueEl = document.getElementById("form-search-order");
+    let timeStartValueEl = document.getElementById("time-start");
+    let timeEndValueEl = document.getElementById("time-end");
+
+    let tinhTrangValue = tinhTrangValueEl ? tinhTrangValueEl.value : "2";
+    let searchValue = searchValueEl ? searchValueEl.value : "";
+    let timeStartValue = timeStartValueEl ? timeStartValueEl.value : "";
+    let timeEndValue = timeEndValueEl ? timeEndValueEl.value : "";
+
 
     if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
         alert("Ngày kết thúc không thể trước ngày bắt đầu!");
@@ -674,28 +724,42 @@ async function findOrder(externalFilters = {}) {
     try {
         const ordersData = await ApiService.fetchAdminOrders(params);
         showOrder(ordersData);
+         if (ordersData.pagination && typeof setupAdminPagination === 'function') {
+            setupAdminPagination(ordersData.pagination.totalItems, adminPerPage, ordersData.pagination.currentPage, 'order', params);
+        }
     } catch (error) {
         console.error("Error finding orders:", error);
-        toast({ title: "Lỗi", message: "Tìm kiếm đơn hàng thất bại.", type: "error" });
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Tìm kiếm đơn hàng thất bại.", type: "error" });
         const showOrderEl = document.getElementById("showOrder");
         if (showOrderEl) showOrderEl.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi tải đơn hàng.</td></tr>`;
     }
 }
 
 async function cancelSearchOrder(){
-    document.getElementById("tinh-trang").value = "2";
-    document.getElementById("form-search-order").value = "";
-    document.getElementById("time-start").value = "";
-    document.getElementById("time-end").value = "";
+    const tinhTrangEl = document.getElementById("tinh-trang");
+    const searchOrderEl = document.getElementById("form-search-order");
+    const timeStartEl = document.getElementById("time-start");
+    const timeEndEl = document.getElementById("time-end");
+
+    if(tinhTrangEl) tinhTrangEl.value = "2";
+    if(searchOrderEl) searchOrderEl.value = "";
+    if(timeStartEl) timeStartEl.value = "";
+    if(timeEndEl) timeEndEl.value = "";
     adminCurrentPage = 1;
     await findOrder();
 }
 
 async function thongKe(sortMode, externalFilters = {}) {
-    let categoryTkValue = document.getElementById("the-loai-tk").value;
-    let searchValue = document.getElementById("form-search-tk").value;
-    let timeStartValue = document.getElementById("time-start-tk").value;
-    let timeEndValue = document.getElementById("time-end-tk").value;
+    let categoryTkValueEl = document.getElementById("the-loai-tk");
+    let searchValueEl = document.getElementById("form-search-tk");
+    let timeStartValueEl = document.getElementById("time-start-tk");
+    let timeEndValueEl = document.getElementById("time-end-tk");
+
+    let categoryTkValue = categoryTkValueEl ? categoryTkValueEl.value : "Tất cả";
+    let searchValue = searchValueEl ? searchValueEl.value : "";
+    let timeStartValue = timeStartValueEl ? timeStartValueEl.value : "";
+    let timeEndValue = timeEndValueEl ? timeEndValueEl.value : "";
+
 
     if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
         alert("Ngày kết thúc không thể trước ngày bắt đầu!");
@@ -721,10 +785,10 @@ async function thongKe(sortMode, externalFilters = {}) {
     }
 
      if (sortMode === 0 && Object.keys(externalFilters).length === 0) {
-        document.getElementById("the-loai-tk").value = "Tất cả";
-        document.getElementById("form-search-tk").value = "";
-        document.getElementById("time-start-tk").value = "";
-        document.getElementById("time-end-tk").value = "";
+        if(categoryTkValueEl) categoryTkValueEl.value = "Tất cả";
+        if(searchValueEl) searchValueEl.value = "";
+        if(timeStartValueEl) timeStartValueEl.value = "";
+        if(timeEndValueEl) timeEndValueEl.value = "";
         delete params.category;
         delete params.search;
         delete params.dateStart;
@@ -736,9 +800,12 @@ async function thongKe(sortMode, externalFilters = {}) {
         const salesReport = await ApiService.fetchAdminSalesReport(params);
         showThongKeTable(salesReport);
         updateThongKeOverview(salesReport);
+         if (salesReport.pagination && typeof setupAdminPagination === 'function') {
+            setupAdminPagination(salesReport.pagination.totalItems, adminPerPage, salesReport.pagination.currentPage, 'stats', params);
+        }
     } catch (error) {
         console.error("Error fetching sales report:", error);
-        toast({ title: "Lỗi", message: "Không thể tải dữ liệu thống kê.", type: "error" });
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không thể tải dữ liệu thống kê.", type: "error" });
     }
 }
 
@@ -753,10 +820,13 @@ function updateThongKeOverview(reportData) {
         totalQuantity += parseInt(item.total_quantity_sold);
         totalRevenue += parseFloat(item.total_revenue_from_product);
     });
+    const quantityProductEl = document.getElementById("quantity-product");
+    const quantityOrderEl = document.getElementById("quantity-order");
+    const quantitySaleEl = document.getElementById("quantity-sale");
 
-    document.getElementById("quantity-product").innerText = totalProductsSoldSet.size;
-    document.getElementById("quantity-order").innerText = totalQuantity;
-    document.getElementById("quantity-sale").innerText = vnd(totalRevenue);
+    if(quantityProductEl) quantityProductEl.innerText = totalProductsSoldSet.size;
+    if(quantityOrderEl) quantityOrderEl.innerText = totalQuantity;
+    if(quantitySaleEl) quantitySaleEl.innerText = vnd(totalRevenue);
 }
 
 function showThongKeTable(reportData) {
@@ -768,10 +838,14 @@ function showThongKeTable(reportData) {
         orderHtml = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu thống kê.</td></tr>`;
     } else {
         reportData.forEach((item, index) => {
+            let itemImageUrl = './assets/img/blank-image.png';
+            if(item.product_img_url) { // product_img_url là /api/products/image/ID
+                 itemImageUrl = BACKEND_URL + item.product_img_url;
+            }
             orderHtml += `
             <tr>
             <td>${index + 1}</td>
-            <td><div class="prod-img-title"><img class="prd-img-tbl" src="${item.product_img_url || './assets/img/blank-image.png'}" alt="${item.product_title}"><p>${item.product_title}</p></div></td>
+            <td><div class="prod-img-title"><img class="prd-img-tbl" src="${itemImageUrl}" alt="${item.product_title || 'Sản phẩm'}"><p>${item.product_title || '(Chưa có tên)'}</p></div></td>
             <td>${item.total_quantity_sold}</td>
             <td>${vnd(item.total_revenue_from_product)}</td>
             <td><button class="btn-detail product-order-detail" data-product-id="${item.product_id}"><i class="fa-regular fa-eye"></i> Chi tiết đơn</button></td>
@@ -784,12 +858,12 @@ function showThongKeTable(reportData) {
     document.querySelectorAll(".product-order-detail").forEach(btn => {
         btn.onclick = () => {
             const prodId = btn.dataset.productId;
-            toast({title: "Thông tin", message: `Chi tiết đơn hàng cho sản phẩm ID ${prodId} (chức năng này cần API riêng).`, type: "info"})
+            if (typeof toast === 'function') toast({title: "Thông tin", message: `Chi tiết đơn hàng cho sản phẩm ID ${prodId} (chức năng này cần API riêng).`, type: "info"})
         };
     });
 }
 
-let currentEditingUserId = null;
+let currentEditingUserAccountId = null;
 
 function signUpFormReset() {
     const signupModal = document.querySelector(".modal.signup");
@@ -812,7 +886,7 @@ function signUpFormReset() {
     if (phoneMsg) phoneMsg.innerHTML = '';
     const passMsg = signupModal.querySelector('.form-message-password');
     if (passMsg) passMsg.innerHTML = '';
-    currentEditingUserId = null;
+    currentEditingUserAccountId = null;
 }
 
 function openCreateAccount() {
@@ -853,10 +927,16 @@ async function showUserArr(usersArray) {
 }
 
 async function showUser(externalFilters = {}) {
-    let tinhTrangValue = document.getElementById("tinh-trang-user").value;
-    let searchValue = document.getElementById("form-search-user").value;
-    let timeStartValue = document.getElementById("time-start-user").value;
-    let timeEndValue = document.getElementById("time-end-user").value;
+    let tinhTrangUserEl = document.getElementById("tinh-trang-user");
+    let searchUserEl = document.getElementById("form-search-user");
+    let timeStartUserEl = document.getElementById("time-start-user");
+    let timeEndUserEl = document.getElementById("time-end-user");
+
+    let tinhTrangValue = tinhTrangUserEl ? tinhTrangUserEl.value : "2";
+    let searchValue = searchUserEl ? searchUserEl.value : "";
+    let timeStartValue = timeStartUserEl ? timeStartUserEl.value : "";
+    let timeEndValue = timeEndUserEl ? timeEndUserEl.value : "";
+
 
     if (timeEndValue && timeStartValue && new Date(timeEndValue) < new Date(timeStartValue)) {
         alert("Ngày kết thúc không thể trước ngày bắt đầu!");
@@ -884,24 +964,28 @@ async function showUser(externalFilters = {}) {
 
     try {
         const usersData = await ApiService.fetchAdminUsers(params);
-        showUserArr(usersData);
-        if (usersData.pagination) {
-             setupAdminPagination(usersData.pagination.totalItems, adminPerPage, usersData.pagination.currentPage, 'user', params);
-        } else if (Array.isArray(usersData)) {
+        showUserArr(usersData); // Giả sử API trả về mảng trực tiếp
+        if (usersData && usersData.length !== undefined && typeof setupAdminPagination === 'function') { // Đơn giản hóa, nếu là mảng thì dùng length
+             setupAdminPagination(usersData.length, adminPerPage, adminCurrentPage, 'user', params);
         }
     } catch (error) {
         console.error("Error fetching users:", error);
-        toast({ title: "Lỗi", message: "Không thể tải danh sách khách hàng.", type: "error" });
+        if (typeof toast === 'function') toast({ title: "Lỗi", message: "Không thể tải danh sách khách hàng.", type: "error" });
         const showUserEl = document.getElementById('show-user');
         if(showUserEl) showUserEl.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi tải dữ liệu.</td></tr>`;
     }
 }
 
 async function cancelSearchUser() {
-    document.getElementById("tinh-trang-user").value = "2";
-    document.getElementById("form-search-user").value = "";
-    document.getElementById("time-start-user").value = "";
-    document.getElementById("time-end-user").value = "";
+    const tinhTrangUserEl = document.getElementById("tinh-trang-user");
+    const searchUserEl = document.getElementById("form-search-user");
+    const timeStartUserEl = document.getElementById("time-start-user");
+    const timeEndUserEl = document.getElementById("time-end-user");
+
+    if(tinhTrangUserEl) tinhTrangUserEl.value = "2";
+    if(searchUserEl) searchUserEl.value = "";
+    if(timeStartUserEl) timeStartUserEl.value = "";
+    if(timeEndUserEl) timeEndUserEl.value = "";
     adminCurrentPage = 1;
     await showUser();
 }
@@ -910,11 +994,11 @@ async function deleteAccount(userId) {
     if (confirm("Bạn có chắc muốn xóa khách hàng này? Hành động này không thể hoàn tác.")) {
         try {
             await ApiService.deleteUserByAdmin(userId);
-            toast({ title: 'Thành công', message: 'Khách hàng đã được xóa.', type: 'success' });
+            if (typeof toast === 'function') toast({ title: 'Thành công', message: 'Khách hàng đã được xóa.', type: 'success' });
             await showUser({page: adminCurrentPage});
         } catch (error) {
             console.error("Error deleting user:", error);
-            toast({ title: 'Lỗi', message: error.data?.message || 'Không thể xóa khách hàng.', type: 'error' });
+            if (typeof toast === 'function') toast({ title: 'Lỗi', message: error.data?.message || 'Không thể xóa khách hàng.', type: 'error' });
         }
     }
 }
@@ -923,10 +1007,10 @@ async function editAccount(userId) {
     try {
         const user = await ApiService.fetchAdminUserById(userId);
         if (!user) {
-            toast({title: "Lỗi", message: "Không tìm thấy người dùng.", type: "error"});
+            if (typeof toast === 'function') toast({title: "Lỗi", message: "Không tìm thấy người dùng.", type: "error"});
             return;
         }
-        currentEditingUserId = userId;
+        currentEditingUserAccountId = userId;
         signUpFormReset();
 
         const signupModal = document.querySelector(".modal.signup");
@@ -952,7 +1036,7 @@ async function editAccount(userId) {
 
     } catch (error) {
         console.error("Error fetching user for edit:", error);
-        toast({title: "Lỗi", message: "Không thể tải thông tin khách hàng.", type: "error"});
+        if (typeof toast === 'function') toast({title: "Lỗi", message: "Không thể tải thông tin khách hàng.", type: "error"});
     }
 }
 
@@ -960,8 +1044,8 @@ const btnUpdateAccount = document.getElementById("btn-update-account");
 if (btnUpdateAccount) {
     btnUpdateAccount.addEventListener("click", async (e) => {
         e.preventDefault();
-        if (!currentEditingUserId) {
-            toast({ title: 'Lỗi', message: 'Không có khách hàng nào được chọn để sửa.', type: 'warning' });
+        if (!currentEditingUserAccountId) {
+            if (typeof toast === 'function') toast({ title: 'Lỗi', message: 'Không có khách hàng nào được chọn để sửa.', type: 'warning' });
             return;
         }
         const signupModal = document.querySelector(".modal.signup");
@@ -993,14 +1077,14 @@ if (btnUpdateAccount) {
         if (password) { userData.password = password; }
 
         try {
-            await ApiService.updateUserByAdmin(currentEditingUserId, userData);
-            toast({ title: 'Thành công', message: 'Thông tin khách hàng đã được cập nhật.', type: 'success' });
+            await ApiService.updateUserByAdmin(currentEditingUserAccountId, userData);
+            if (typeof toast === 'function') toast({ title: 'Thành công', message: 'Thông tin khách hàng đã được cập nhật.', type: 'success' });
             signupModal.classList.remove("open");
             signUpFormReset();
             await showUser({page: adminCurrentPage});
         } catch (error) {
             console.error("Error updating user by admin:", error);
-            toast({ title: 'Lỗi', message: error.data?.message || 'Cập nhật thất bại.', type: 'error' });
+            if (typeof toast === 'function') toast({ title: 'Lỗi', message: error.data?.message || 'Cập nhật thất bại.', type: 'error' });
         }
     });
 }
@@ -1038,14 +1122,14 @@ if (addAccountButtonInModal) {
         try {
             const newUser = { fullname: fullNameUser, phone: phoneUser, password: passwordUser, user_type: 0, status: 1 };
             await ApiService.createUserByAdmin(newUser);
-            toast({ title: 'Thành công', message: 'Tạo khách hàng mới thành công!', type: 'success' });
+            if (typeof toast === 'function') toast({ title: 'Thành công', message: 'Tạo khách hàng mới thành công!', type: 'success' });
             signupModal.classList.remove("open");
             signUpFormReset();
             adminCurrentPage = 1;
             await showUser();
         } catch (error) {
             console.error("Error creating user by admin:", error);
-            toast({ title: 'Lỗi', message: error.data?.message || 'Tạo khách hàng thất bại.', type: 'error' });
+            if (typeof toast === 'function') toast({ title: 'Lỗi', message: error.data?.message || 'Tạo khách hàng thất bại.', type: 'error' });
         }
     });
 }
@@ -1055,9 +1139,9 @@ if (logoutAccButton) {
     logoutAccButton.addEventListener('click', (e) => {
         e.preventDefault();
         ApiService.logoutUser();
-        window.location = "/";
     });
 }
+
 
 document.addEventListener('DOMContentLoaded', async () => {
     const isAdminLoggedIn = await checkLogin();
@@ -1067,5 +1151,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await findOrder();
         await thongKe(0);
         await showUser();
+        if(typeof testDisplaySingleImage === "function"){
+             testDisplaySingleImage();
+        }
     }
 });
