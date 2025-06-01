@@ -1033,6 +1033,98 @@ async function searchProducts(sortOption) {
     }
 }
 
+// async function searchProducts(sortOption) {
+//     let valeSearchInput = document.querySelector('.form-search-input').value.trim();
+//     let valueCategory = document.getElementById("advanced-search-category-select").value.trim();
+//     let minPrice = document.getElementById("min-price").value.trim();
+//     let maxPrice = document.getElementById("max-price").value.trim();
+
+//     // Validate price inputs
+//     let minPriceNum = minPrice ? parseFloat(minPrice) : undefined;
+//     let maxPriceNum = maxPrice ? parseFloat(maxPrice) : undefined;
+
+//     if (minPriceNum !== undefined && maxPriceNum !== undefined && minPriceNum > maxPriceNum) {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối thiểu không thể lớn hơn giá tối đa.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     if (minPrice && isNaN(minPriceNum)) {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối thiểu không hợp lệ.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     if (maxPrice && isNaN(maxPriceNum)) {
+//         toast({
+//             title: "Lỗi",
+//             message: "Giá tối đa không hợp lệ.",
+//             type: "error",
+//             duration: 3000
+//         });
+//         return;
+//     }
+
+//     // Prepare parameters, exclude empty or invalid values
+//     let params = {
+//         page: 1,
+//         limit: perPage
+//     };
+
+//     if (valeSearchInput) {
+//         params.search = valeSearchInput;
+//     }
+
+//     if (valueCategory && valueCategory !== "Tất cả") {
+//         params.category = valueCategory;
+//     }
+
+//     if (!isNaN(minPriceNum)) {
+//         params.minPrice = minPriceNum;
+//     }
+
+//     if (!isNaN(maxPriceNum)) {
+//         params.maxPrice = maxPriceNum;
+//     }
+
+//     if (sortOption === 1) {
+//         params.sortBy = 'price_asc';
+//     } else if (sortOption === 2) {
+//         params.sortBy = 'price_desc';
+//     } else if (sortOption === 0) {
+//         // Reset filters
+//         document.querySelector('.form-search-input').value = "";
+//         document.getElementById("advanced-search-category-select").value = "Tất cả";
+//         document.getElementById("min-price").value = "";
+//         document.getElementById("max-price").value = "";
+//         params = { page: 1, limit: perPage }; // Fetch all products
+//     }
+
+//     currentPage = 1;
+//     console.log('Search params:', params); // Debug log
+
+//     try {
+//         await fetchAndDisplayProducts(params);
+//         document.getElementById("home-service").scrollIntoView({ behavior: 'smooth' });
+//     } catch (error) {
+//         console.error("Search error:", error);
+//         toast({
+//             title: 'Error',
+//             message: 'Không thể tìm kiếm sản phẩm. Vui lòng thử lại.',
+//             type: 'error',
+//             duration: 3000
+//         });
+//     }
+// }
+
 let perPage = 12;
 let currentPage = 1;
 async function fetchAndDisplayProducts(params = {}) {
@@ -1070,26 +1162,30 @@ async function fetchAndDisplayProducts(params = {}) {
     }
 }
 
-
 function setupPagination(totalItems, perPage, activePage, currentParams = {}) {
     const pageNavList = document.querySelector('.page-nav-list');
-    pageNavList.innerHTML = '';
+    pageNavList.innerHTML = ''; // Clear existing pagination
     const page_count = Math.ceil(totalItems / perPage);
 
     for (let i = 1; i <= page_count; i++) {
-        let node = document.createElement(`li`);
+        let node = document.createElement('li');
         node.classList.add('page-nav-item');
         node.innerHTML = `<a href="javascript:;">${i}</a>`;
-        if (activePage === i) node.classList.add('active');
+        if (activePage === i) {
+            node.classList.add('active'); // Set active class for the current page
+        }
 
         node.addEventListener('click', async function () {
-            currentPage = i;
-            await fetchAndDisplayProducts({...currentParams, page: currentPage});
-
-            document.querySelectorAll('.page-nav-item.active').forEach(active => active.classList.remove('active'));
+            // Remove active class from all pagination items
+            document.querySelectorAll('.page-nav-item').forEach(item => item.classList.remove('active'));
+            // Add active class to the clicked item
             node.classList.add('active');
-            document.getElementById("home-title").scrollIntoView({behavior: 'smooth'});
+            
+            currentPage = i; // Update current page
+            await fetchAndDisplayProducts({ ...currentParams, page: currentPage });
+            document.getElementById("home-title").scrollIntoView({ behavior: 'smooth' });
         });
+
         pageNavList.appendChild(node);
     }
 }
@@ -1132,3 +1228,7 @@ const debouncedSearchProducts = debounce(() => {
         searchProducts();
     }
 }, 500);
+
+// const debouncedSearchProducts = debounce(() => {
+//     searchProducts(); // Call searchProducts directly on input change
+// }, 500);
