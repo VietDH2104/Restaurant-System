@@ -68,60 +68,6 @@ async function thanhtoanpage(option, productDetails) { // productDetails for "bu
     let calculatedSubtotal = 0;
     let itemCount = 0;
 
-    // if (option === 1) { // Truong hop thanh toan san pham trong gio
-    //     const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUser.id}`)) || [];
-    //     if (cart.length === 0) {
-    //         toast({title: "Giỏ hàng trống", message: "Vui lòng thêm sản phẩm vào giỏ hàng.", type: "warning"});
-    //         closecheckout();
-    //         return;
-    //     }
-    //     currentCartForCheckout = cart.map(item => ({
-    //         product_id: item.id,
-    //         quantity: item.soluong,
-    //         price_at_purchase: item.price, // Assuming price is stored in cart item
-    //         item_notes: item.note,
-    //         title: item.title // For display
-    //     }));
-    //     showProductCartCheckout(currentCartForCheckout); // Updated to take checkout cart
-    //     calculatedSubtotal = getCartTotal(); // Uses localStorage cart total
-    //     itemCount = getAmountCart(); // Uses localStorage cart item count
-    // } 
-    
-    
-    //     if (option === 1) { // Truong hop thanh toan san pham trong gio
-    //         const cart = await ApiService.fetchCart();
-    //         if (cart.length === 0) {
-    //             toast({title: "Giỏ hàng trống", message: "Vui lòng thêm sản phẩm vào giỏ hàng.", type: "warning"});
-    //             closecheckout();
-    //             return;
-    //         }
-    //         currentCartForCheckout = cart.map(item => ({
-    //             product_id: item.product_id,
-    //             quantity: item.quantity,
-    //             price_at_purchase: item.price,
-    //             item_notes: item.note,
-    //             title: item.title
-    //         }));
-    //         showProductCartCheckout(currentCartForCheckout);
-    //         calculatedSubtotal = await ApiService.getCartTotal();
-    //         itemCount = await ApiService.getCartItemCount();
-    //     } else if (option === 2 && productDetails) { // Truong hop mua ngay
-    //     currentCartForCheckout = [{
-    //         product_id: productDetails.id,
-    //         quantity: productDetails.soluong,
-    //         price_at_purchase: productDetails.price,
-    //         item_notes: productDetails.note,
-    //         title: productDetails.title // For display
-    //     }];
-    //     showProductBuyNowCheckout(productDetails);
-    //     calculatedSubtotal = productDetails.soluong * productDetails.price;
-    //     itemCount = productDetails.soluong;
-    // } else {
-    //     toast({title: "Lỗi", message: "Không có sản phẩm để thanh toán.", type: "error"});
-    //     closecheckout();
-    //     return;
-    // }
-
         if (option === 1) { // Cart checkout
         try {
             const cart = await ApiService.fetchCart();
@@ -257,29 +203,6 @@ function showProductBuyNowCheckout(product) {
 //Open Page Checkout
 let nutthanhtoan = document.querySelector('.thanh-toan')
 let checkoutpage = document.querySelector('.checkout-page');
-// nutthanhtoan.addEventListener('click', () => {
-//     if (!ApiService.isUserLoggedIn()) {
-//         toast({ title: 'Yêu cầu đăng nhập', message: 'Vui lòng đăng nhập để tiến hành thanh toán.', type: 'warning' });
-//         // Assuming loginbtn is globally available from main.js
-//         if (typeof loginbtn !== 'undefined' && loginbtn.click) {
-//             loginbtn.click();
-//         }
-//         return;
-//     }
-//     const currentUserInfo = ApiService.getCurrentUser();
-//     const cart = JSON.parse(localStorage.getItem(`UserCart_${currentUserInfo.id}`)) || [];
-//     if (cart.length === 0) {
-//         toast({ title: 'Giỏ hàng trống', message: 'Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.', type: 'info' });
-//         return;
-//     }
-
-//     checkoutpage.classList.add('active');
-//     thanhtoanpage(1); // Option 1 for cart checkout
-//     // Assuming closeCart and body are globally available from main.js
-//     if (typeof closeCart === 'function') closeCart();
-//     if (typeof body !== 'undefined') body.style.overflow = "hidden";
-// })
-
 nutthanhtoan.addEventListener('click', async () => {
     if (!ApiService.isUserLoggedIn()) {
         toast({ title: 'Yêu cầu đăng nhập', message: 'Vui lòng đăng nhập để tiến hành thanh toán.', type: 'warning' });

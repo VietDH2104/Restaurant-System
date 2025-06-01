@@ -192,10 +192,6 @@
         return request('/cart', 'DELETE', null, true);
         },
 
-        // getCartTotal: async function() {
-        // return request('/cart/total', 'GET', null, true);
-        // },
-
         getCartTotal: async function() {
             try {
                 const response = await request('/cart/total', 'GET', null, true);

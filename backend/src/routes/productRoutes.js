@@ -20,8 +20,6 @@ const upload = multer({
 router.get('/', productController.getAllProducts);
 router.get('/admin/all', protect, isAdmin, productController.getAllProductsAdmin);
 router.get('/:id', productController.getProductById);
-// router.post('/', protect, isAdmin, productController.createProduct);
-// router.put('/:id', protect, isAdmin, productController.updateProduct);
 router.post('/', protect, isAdmin, upload.single('imageFile'), productController.createProduct);
 router.put('/:id', protect, isAdmin, upload.single('imageFile'), productController.updateProduct);
 router.put('/:id/status', protect, isAdmin, productController.updateProductStatus);
