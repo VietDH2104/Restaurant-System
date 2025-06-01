@@ -57,9 +57,20 @@ async function detailProduct(productId) {
             return;
         }
 
+        // Determine the correct image URL based on storage location
+        const backendBaseUrl = 'http://localhost:5000'; // Adjust based on your backend URL
+        let imageUrl;
+        if (infoProduct.img_url && infoProduct.img_url.startsWith('/uploads/')) {
+            // Image is stored in backend /public/uploads
+            imageUrl = `${backendBaseUrl}${infoProduct.img_url}`;
+        } else {
+            // Image is stored in frontend /assets/img/products or use fallback
+            imageUrl = infoProduct.img_url || './assets/img/blank-image.png';
+        }
+
         let modal = document.querySelector('.modal.product-detail');
         let modalHtml = `<div class="modal-header">
-        <img class="product-image" src="${infoProduct.img_url || './assets/img/blank-image.png'}" alt="">
+            <img class="product-image" src="${imageUrl}" alt="">
         </div>
         <div class="modal-body">
             <h2 class="product-title">${infoProduct.title}</h2>
@@ -76,8 +87,8 @@ async function detailProduct(productId) {
             <p class="product-description">${infoProduct.description || ''}</p>
         </div>
         <div class="notebox">
-                <p class="notebox-title">Ghi chú</p>
-                <textarea class="text-note" id="popup-detail-note" placeholder="Nhập thông tin cần lưu ý..."></textarea>
+            <p class="notebox-title">Ghi chú</p>
+            <textarea class="text-note" id="popup-detail-note" placeholder="Nhập thông tin cần lưu ý..."></textarea>
         </div>
         <div class="modal-footer">
             <div class="price-total">
@@ -92,7 +103,8 @@ async function detailProduct(productId) {
         document.querySelector('#product-detail-content').innerHTML = modalHtml;
         modal.classList.add('open');
         body.style.overflow = "hidden";
-        //Cap nhat gia tien khi tang so luong san pham
+
+        // Update price when quantity changes
         let tgbtn = document.querySelectorAll('.product-detail .is-form');
         let qty = document.querySelector('.product-detail .input-qty');
         let priceText = document.querySelector('.product-detail .price');
@@ -107,24 +119,23 @@ async function detailProduct(productId) {
             priceText.innerHTML = vnd(price);
         });
 
-        // Them san pham vao gio hang
+        // Add product to cart
         let productbtn = document.querySelector('.product-detail .button-dat');
         productbtn.addEventListener('click', (e) => {
             if (ApiService.isUserLoggedIn()) {
-                addCart(infoProduct.id, infoProduct.price, infoProduct.title, infoProduct.img_url);
+                addCart(infoProduct.id, infoProduct.price, infoProduct.title, imageUrl); // Use updated imageUrl
             } else {
                 toast({ title: 'Warning', message: 'Chưa đăng nhập tài khoản !', type: 'warning', duration: 3000 });
                 loginbtn.click(); // Open login modal
             }
         });
-        // Mua ngay san pham
-        dathangngay(); // This function is defined in checkout.js, ensure it's loaded or move definition
+        // Proceed to checkout
+        dathangngay();
     } catch (error) {
         console.error("Error fetching product detail:", error);
         toast({ title: 'Error', message: error.message || 'Lỗi tải chi tiết sản phẩm!', type: 'error', duration: 3000 });
     }
 }
-
 
 function animationCart() {
     document.querySelector(".count-product-cart").style.animation = "slidein ease 1s"

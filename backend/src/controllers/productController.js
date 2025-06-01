@@ -111,9 +111,16 @@ const saveProductImage = (file, productId) => {
   const filename = `product_${productId}${ext}`;
   const filePath = path.join(uploadDir, filename);
 
-  fs.writeFileSync(filePath, file.buffer);
-  // return `/assets/img/products/${filename}`;
-  return `/uploads/${filename}`;
+  // fs.writeFileSync(filePath, file.buffer);
+  // // return `/assets/img/products/${filename}`;
+  // return `/uploads/${filename}`;
+  try {
+    fs.writeFileSync(filePath, file.buffer);
+    return `/uploads/${filename}`;
+  } catch (error) {
+    console.error('Error saving product image:', error);
+    return null;
+  }
 };
 
 exports.createProduct = async (req, res) => {
