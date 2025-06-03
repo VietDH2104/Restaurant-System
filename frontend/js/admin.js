@@ -87,72 +87,6 @@ function vnd(price) {
 let adminCurrentPage = 1;
 let adminPerPage = 10;
 
-// function setupAdminPagination(
-//   totalItems,
-//   perPage,
-//   activePage,
-//   sectionType,
-//   currentFilters = {}
-// ) {
-//   let pageNavList;
-//   if (sectionType === "product") {
-//     pageNavList = document.querySelector(".product-all .page-nav-list");
-//   } else if (sectionType === "user") {
-//     const userSection = sections[2];
-//     if (userSection) pageNavList = userSection.querySelector(".page-nav-list");
-//   } else if (sectionType === "order") {
-//     const orderSection = sections[3];
-//     if (orderSection)
-//       pageNavList = orderSection.querySelector(".page-nav-list");
-//   } else if (sectionType === "stats") {
-//     const statsSection = sections[4];
-//     if (statsSection)
-//       pageNavList = statsSection.querySelector(".page-nav-list");
-//   }
-
-//   if (!pageNavList) {
-//     if (sectionType !== "user" && sectionType !== "dashboard") {
-//       console.warn(
-//         "Pagination list element not found for section:",
-//         sectionType
-//       );
-//     }
-//     return;
-//   }
-//   pageNavList.innerHTML = "";
-//   const page_count = Math.ceil(totalItems / perPage);
-
-//   for (let i = 1; i <= page_count; i++) {
-//     let node = document.createElement(`li`);
-//     node.classList.add("page-nav-item");
-//     node.innerHTML = `<a href="javascript:;">${i}</a>`;
-//     if (activePage === i) node.classList.add("active");
-
-//     node.addEventListener("click", async function () {
-//       adminCurrentPage = i;
-//       const newFilters = { ...currentFilters, page: adminCurrentPage };
-
-//       if (sectionType === "product") {
-//         await showProduct(newFilters);
-//       } else if (sectionType === "user") {
-//         await showUser(newFilters);
-//       } else if (sectionType === "order") {
-//         await findOrder(newFilters);
-//       } else if (sectionType === "stats") {
-//         const currentSortMode = getCurrentSortModeForStats();
-//         await thongKe(currentSortMode, newFilters);
-//       }
-
-//       const currentActivePagItem = pageNavList.querySelector(
-//         ".page-nav-item.active"
-//       );
-//       if (currentActivePagItem) currentActivePagItem.classList.remove("active");
-//       node.classList.add("active");
-//     });
-//     pageNavList.appendChild(node);
-//   }
-// }
-
 function setupAdminPagination(totalItems, perPage, activePage, sectionType, currentFilters = {}) {
   let pageNavList;
   if (sectionType === "product") {
@@ -214,60 +148,6 @@ function setupAdminPagination(totalItems, perPage, activePage, sectionType, curr
 function getCurrentSortModeForStats() {
   return 0;
 }
-
-// async function showProductArr(arr) {
-//   let productHtml = "";
-//   const productShowElement = document.getElementById("show-product");
-//   if (!productShowElement) return;
-
-//   if (!arr || arr.length == 0) {
-//     productHtml = `<div class="no-result" style="padding: 20px; text-align: center;"><div class="no-result-i" style="font-size: 48px; margin-bottom: 10px;"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h" style="font-size: 1.2rem;">Không có sản phẩm để hiển thị</div></div>`;
-//   } else {
-//     arr.forEach((product) => {
-//       let btnCtl =
-//         product.status == 1
-//           ? `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>`
-//           : `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
-//       // Normalize image URL
-//       let imgSrc = product.img_url;
-//       if (!imgSrc || imgSrc === '') {
-//         console.warn(`Product ${product.id} has no img_url, using fallback.`);
-//         imgSrc = './assets/img/blank-image.png';
-//       } else if (imgSrc.startsWith('/uploads')) {
-//         imgSrc = `http://localhost:5000${imgSrc}`;
-//       } else if (imgSrc.startsWith('/assets')) {
-//         // Handle images in frontend/assets/img/products
-//         imgSrc = `.${imgSrc}`; // Relative path for frontend server
-//       } else {
-//         console.warn(`Product ${product.id} has unexpected img_url: ${imgSrc}`);
-//         imgSrc = './assets/img/blank-image.png'; // Fallback for unexpected paths
-//       }
-//       productHtml += `
-//             <div class="list">
-//                 <div class="list-left">
-//                     <img src="${imgSrc}" alt="${product.title}">
-//                     <div class="list-info">
-//                         <h4>${product.title}</h4>
-//                         <p class="list-note">${product.description || ""}</p>
-//                         <span class="list-category">${product.category}</span>
-//                     </div>
-//                 </div>
-//                 <div class="list-right">
-//                     <div class="list-price">
-//                         <span class="list-current-price">${vnd(product.price)}</span>
-//                     </div>
-//                     <div class="list-control">
-//                         <div class="list-tool">
-//                             <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
-//                             ${btnCtl}
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>`;
-//     });
-//   }
-//   productShowElement.innerHTML = productHtml;
-// }
 
 async function showProductArr(arr) {
   let productHtml = "";

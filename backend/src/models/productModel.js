@@ -20,7 +20,6 @@ const Product = {
       let whereClauses = [];
       const queryParams = [];
 
-      // Apply status filter for customer view
       if (filters.forCustomerView) {
           whereClauses.push('status = 1');
       } else if (filters.status !== undefined && filters.status !== 'all' && filters.status !== '2') {
@@ -28,19 +27,16 @@ const Product = {
           queryParams.push(parseInt(filters.status));
       }
 
-      // Handle category filter
       if (filters.category && filters.category !== 'Tất cả' && filters.category !== 'undefined' && filters.category.trim()) {
           whereClauses.push('LOWER(category) = LOWER(?)');
           queryParams.push(filters.category.trim());
       }
 
-      // Handle search filter
       if (filters.search && filters.search.trim() && filters.search !== 'undefined') {
           whereClauses.push('LOWER(title) LIKE LOWER(?)');
           queryParams.push(`%${filters.search.trim()}%`);
       }
 
-      // Handle price filters
       if (filters.minPrice !== undefined && !isNaN(filters.minPrice)) {
           whereClauses.push('price >= ?');
           queryParams.push(parseFloat(filters.minPrice));
@@ -50,12 +46,10 @@ const Product = {
           queryParams.push(parseFloat(filters.maxPrice));
       }
 
-      // Build WHERE clause
       const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
       baseSelectSql += ` ${whereCondition}`;
       countSelectSql += ` ${whereCondition}`;
 
-      // Apply sorting
       if (filters.sortBy) {
           if (filters.sortBy === 'price_asc') baseSelectSql += ' ORDER BY price ASC';
           else if (filters.sortBy === 'price_desc') baseSelectSql += ' ORDER BY price DESC';
@@ -63,7 +57,6 @@ const Product = {
           baseSelectSql += ' ORDER BY created_at DESC';
       }
 
-      // Apply pagination
       if (filters.limit) {
           baseSelectSql += ' LIMIT ?';
           queryParams.push(parseInt(filters.limit));
@@ -73,10 +66,8 @@ const Product = {
           }
       }
 
-      // Log the SQL query and parameters
       console.log('Executing SQL Query:', baseSelectSql, 'Params:', queryParams);
 
-      // Execute queries
       const [countRows] = await pool.query(countSelectSql, queryParams.slice(0, queryParams.length - (filters.offset !== undefined ? 2 : 1)));
       const total = countRows[0].total;
 

@@ -92,7 +92,6 @@ exports.getAllUsers = async (req, res) => {
         parsedUserType = 0;
     }
 
-    // Validate date formats
     if (joinDateStart && !/^\d{4}-\d{2}-\d{2}$/.test(joinDateStart)) {
       console.warn(`Invalid joinDateStart format: ${joinDateStart}`);
       joinDateStart = undefined;
@@ -110,7 +109,7 @@ exports.getAllUsers = async (req, res) => {
         userType: parsedUserType
     };
 
-    console.log("getAllUsers filters:", filters); // Debug: Log filters applied
+    console.log("getAllUsers filters:", filters); 
 
     const users = await User.findAll(filters);
     res.json(users);

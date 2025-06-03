@@ -19,7 +19,7 @@ exports.getAllProducts = async (req, res) => {
         offset
     };
     const { products, total } = await Product.findAll(filters);
-    console.log('Products found:', products.length, 'Total:', total); // Debug log
+    console.log('Products found:', products.length, 'Total:', total); 
     
     res.json({
         data: products,
@@ -97,11 +97,9 @@ exports.updateProductStatus = async (req, res) => {
     }
 };
 
-// Add this helper function
 const saveProductImage = (file, productId) => {
   if (!file) return null;
-  
-  // const uploadDir = path.join(__dirname, '../../frontend/assets/img/products');
+
   const uploadDir = path.join(__dirname, '../public/uploads');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -111,9 +109,6 @@ const saveProductImage = (file, productId) => {
   const filename = `product_${productId}${ext}`;
   const filePath = path.join(uploadDir, filename);
 
-  // fs.writeFileSync(filePath, file.buffer);
-  // // return `/assets/img/products/${filename}`;
-  // return `/uploads/${filename}`;
   try {
     fs.writeFileSync(filePath, file.buffer);
     return `/uploads/${filename}`;
@@ -126,9 +121,9 @@ const saveProductImage = (file, productId) => {
 exports.createProduct = async (req, res) => {
   try {
     console.log('req.body:', req.body);
-    console.log('req.file:', req.file); // Updated log
+    console.log('req.file:', req.file); 
     const { title, category, price, description, status = 1 } = req.body;
-    const imageFile = req.file; // Use req.file
+    const imageFile = req.file; 
 
     if (!title || !category || price === undefined) {
       console.log('Validation failed: Missing required fields');

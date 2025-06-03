@@ -177,8 +177,6 @@ const Order = {
     }
 
     sql += ' ORDER BY o.order_timestamp DESC';
-    // const [rows] = await pool.query(sql, params);
-    // return rows;
     console.log('Executing findByProductId query:', sql, 'with params:', params);
     try {
         const [rows] = await pool.query(sql, params);
