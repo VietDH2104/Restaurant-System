@@ -87,13 +87,7 @@ function vnd(price) {
 let adminCurrentPage = 1;
 let adminPerPage = 10;
 
-function setupAdminPagination(
-  totalItems,
-  perPage,
-  activePage,
-  sectionType,
-  currentFilters = {}
-) {
+function setupAdminPagination(totalItems, perPage, activePage, sectionType, currentFilters = {}) {
   let pageNavList;
   if (sectionType === "product") {
     pageNavList = document.querySelector(".product-all .page-nav-list");
@@ -102,34 +96,37 @@ function setupAdminPagination(
     if (userSection) pageNavList = userSection.querySelector(".page-nav-list");
   } else if (sectionType === "order") {
     const orderSection = sections[3];
-    if (orderSection)
-      pageNavList = orderSection.querySelector(".page-nav-list");
+    if (orderSection) pageNavList = orderSection.querySelector(".page-nav-list");
   } else if (sectionType === "stats") {
     const statsSection = sections[4];
-    if (statsSection)
-      pageNavList = statsSection.querySelector(".page-nav-list");
+    if (statsSection) pageNavList = statsSection.querySelector(".page-nav-list");
   }
 
   if (!pageNavList) {
     if (sectionType !== "user" && sectionType !== "dashboard") {
-      console.warn(
-        "Pagination list element not found for section:",
-        sectionType
-      );
+      console.warn("Pagination list element not found for section:", sectionType);
     }
     return;
   }
-  pageNavList.innerHTML = "";
+
+  pageNavList.innerHTML = ""; // Clear existing pagination
   const page_count = Math.ceil(totalItems / perPage);
 
   for (let i = 1; i <= page_count; i++) {
-    let node = document.createElement(`li`);
+    let node = document.createElement("li");
     node.classList.add("page-nav-item");
     node.innerHTML = `<a href="javascript:;">${i}</a>`;
-    if (activePage === i) node.classList.add("active");
+    if (i === adminCurrentPage) {
+      node.classList.add("active"); // Use adminCurrentPage to set active state
+    }
 
     node.addEventListener("click", async function () {
-      adminCurrentPage = i;
+      // Remove active class from all pagination items
+      pageNavList.querySelectorAll(".page-nav-item").forEach((item) => item.classList.remove("active"));
+      // Add active class to the clicked item
+      node.classList.add("active");
+
+      adminCurrentPage = i; // Update the global current page
       const newFilters = { ...currentFilters, page: adminCurrentPage };
 
       if (sectionType === "product") {
@@ -142,16 +139,12 @@ function setupAdminPagination(
         const currentSortMode = getCurrentSortModeForStats();
         await thongKe(currentSortMode, newFilters);
       }
-
-      const currentActivePagItem = pageNavList.querySelector(
-        ".page-nav-item.active"
-      );
-      if (currentActivePagItem) currentActivePagItem.classList.remove("active");
-      node.classList.add("active");
     });
+
     pageNavList.appendChild(node);
   }
 }
+
 function getCurrentSortModeForStats() {
   return 0;
 }
@@ -169,12 +162,24 @@ async function showProductArr(arr) {
         product.status == 1
           ? `<button class="btn-delete" onclick="updateProductStatus(${product.id}, 0, this)"><i class="fa-regular fa-trash"></i></button>`
           : `<button class="btn-delete btn-restore" onclick="updateProductStatus(${product.id}, 1, this)"><i class="fa-regular fa-eye"></i></button>`;
+      // Normalize image URL
+      let imgSrc = product.img_url;
+      if (!imgSrc || imgSrc === '') {
+        console.warn(`Product ${product.id} has no img_url, using fallback.`);
+        imgSrc = './assets/img/blank-image.png';
+      } else if (imgSrc.startsWith('/uploads')) {
+        imgSrc = `http://localhost:5000${imgSrc}`;
+      } else if (imgSrc.startsWith('/assets') || imgSrc.startsWith('./assets')) {
+        // Handle both /assets and ./assets for frontend images
+        imgSrc = imgSrc.startsWith('/assets') ? `.${imgSrc}` : imgSrc;
+      } else {
+        console.warn(`Product ${product.id} has unexpected img_url: ${imgSrc}`);
+        imgSrc = './assets/img/blank-image.png'; // Fallback for truly invalid paths
+      }
       productHtml += `
             <div class="list">
                 <div class="list-left">
-                    <img src="${
-                      product.img_url || "./assets/img/blank-image.png"
-                    }" alt="${product.title}">
+                    <img src="${imgSrc}" alt="${product.title}">
                     <div class="list-info">
                         <h4>${product.title}</h4>
                         <p class="list-note">${product.description || ""}</p>
@@ -183,18 +188,14 @@ async function showProductArr(arr) {
                 </div>
                 <div class="list-right">
                     <div class="list-price">
-                    <span class="list-current-price">${vnd(
-                      product.price
-                    )}</span>
+                        <span class="list-current-price">${vnd(product.price)}</span>
                     </div>
                     <div class="list-control">
-                    <div class="list-tool">
-                        <button class="btn-edit" onclick="editProduct(${
-                          product.id
-                        })"><i class="fa-light fa-pen-to-square"></i></button>
-                        ${btnCtl}
+                        <div class="list-tool">
+                            <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
+                            ${btnCtl}
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>`;
     });
@@ -300,17 +301,18 @@ async function editProduct(id) {
       .forEach((item) => (item.style.display = "block"));
     document.querySelector(".modal.add-product").classList.add("open");
 
-    document.querySelector(".modal.add-product .upload-image-preview").src =
-      product.img_url || "./assets/img/blank-image.png";
+    let imgSrc = product.img_url || "./assets/img/blank-image.png";
+    if (imgSrc.startsWith('/uploads')) {
+      imgSrc = `http://localhost:5000${imgSrc}`;
+    } else if (imgSrc.startsWith('/assets')) {
+      imgSrc = `.${imgSrc}`;
+    }
+    document.querySelector(".modal.add-product .upload-image-preview").src = imgSrc;
     document.querySelector(".modal.add-product #ten-mon").value = product.title;
     document.querySelector(".modal.add-product #gia-moi").value = product.price;
-    document.querySelector(".modal.add-product #mo-ta").value =
-      product.description || "";
-    document.querySelector(".modal.add-product #chon-mon").value =
-      product.category;
-    document.querySelector(
-      ".modal.add-product .upload-image-preview"
-    ).dataset.originalUrl = product.img_url || "";
+    document.querySelector(".modal.add-product #mo-ta").value = product.description || "";
+    document.querySelector(".modal.add-product #chon-mon").value = product.category;
+    document.querySelector(".modal.add-product .upload-image-preview").dataset.originalUrl = imgSrc;
     uploadedFile = null;
   } catch (error) {
     console.error("Error fetching product for edit:", error);
@@ -368,6 +370,7 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
   const price = document.querySelector(".modal.add-product #gia-moi").value;
   const description = document.querySelector(".modal.add-product #mo-ta").value;
   const category = document.querySelector(".modal.add-product #chon-mon").value;
+  const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
 
   if (!title || !price || !category) {
     toast({
@@ -389,21 +392,32 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
   formData.append("category", category);
   formData.append("status", "1");
 
-  // formData.append("title", tenMon);
-  // formData.append("price", parseFloat(price));
-  // formData.append("description", moTa);
-  // formData.append("category", categoryText);
-  // formData.append("status", "1");
   if (fileInput.files.length > 0) {
-    formData.append("imageFile", fileInput.files[0]);
+    const file = fileInput.files[0];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Chú ý",
+        message: "Chỉ chấp nhận file ảnh JPEG hoặc PNG!",
+        type: "warning",
+      });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Chú ý",
+        message: "Kích thước file ảnh không được vượt quá 5MB!",
+        type: "warning",
+      });
+      return;
+    }
+    formData.append("imageFile", file);
+    uploadedFile = file; // Sync uploadedFile for consistency
   }
+
   console.log('FormData contents:');
   for (let [key, value] of formData.entries()) {
     console.log(key, value);
-  }
-
-  if (uploadedFile) {
-    formData.append("imageFile", uploadedFile);
   }
 
   try {
@@ -417,7 +431,7 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
     document.querySelector(".modal.add-product").classList.remove("open");
     await showProduct({ page: adminCurrentPage });
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("Error updating product:", error, error.status, error.data);
     toast({
       title: "Lỗi",
       message: error.data?.message || "Sửa sản phẩm thất bại.",
@@ -427,294 +441,6 @@ btnUpdateProductIn.addEventListener("click", async (e) => {
 });
 
 let btnAddProductIn = document.getElementById("add-product-button");
-// btnAddProductIn.addEventListener("click", async (e) => {
-//     e.preventDefault();
-
-//     const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-//     const price = document.querySelector(".modal.add-product #gia-moi").value;
-//     const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-//     const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
-
-//     if(tenMon == "" || price == "" || categoryText == "") {
-//         toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
-//         return;
-//     }
-//     if(isNaN(parseFloat(price))) {
-//         toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-//         return;
-//     }
-
-//     const formData = new FormData();
-//     formData.append('title', tenMon);
-//     formData.append('price', parseFloat(price));
-//     formData.append('description', moTa);
-//     formData.append('category', categoryText);
-//     formData.append('status', 1);
-
-//     if (uploadedFile) {
-//         formData.append('imageFile', uploadedFile);
-//     }
-
-//     try {
-//         await ApiService.createProduct(formData);
-//         toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
-//         setDefaultProductFormValue();
-//         document.querySelector(".modal.add-product").classList.remove("open");
-//         adminCurrentPage = 1;
-//         await showProduct();
-//     } catch (error) {
-//         console.error("Error adding product:", error);
-//         toast({ title: "Lỗi", message: error.data?.message || "Thêm sản phẩm thất bại.", type: "error" });
-//     }
-// });
-
-// btnAddProductIn.addEventListener("click", async (e) => {
-//   e.preventDefault();
-
-//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-//   const price = document.querySelector(".modal.add-product #gia-moi").value;
-//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-//   const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
-
-//   if(!tenMon || !price || !categoryText) {
-//     toast({ title: "Chú ý", message: "Vui lòng nhập tên món, giá và chọn loại món!", type: "warning" });
-//     return;
-//   }
-//   if(isNaN(parseFloat(price))) {
-//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-//     return;
-//   }
-
-//   const formData = new FormData();
-//   formData.append('title', tenMon);
-//   formData.append('price', parseFloat(price));
-//   formData.append('description', moTa);
-//   formData.append('category', categoryText);
-//   formData.append('status', '1');
-
-//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
-//   if (fileInput.files.length > 0) {
-//     formData.append('imageFile', fileInput.files[0]);
-//   }
-
-//   try {
-//     await ApiService.createProduct(formData);
-//     toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success"});
-//     setDefaultProductFormValue();
-//     document.querySelector(".modal.add-product").classList.remove("open");
-//     adminCurrentPage = 1;
-//     await showProduct();
-//   } catch (error) {
-//     console.error("Error adding product:", error);
-//     toast({
-//       title: "Lỗi",
-//       message: error.data?.message || "Thêm sản phẩm thất bại.",
-//       type: "error"
-//     });
-//   }
-// });
-
-// btnAddProductIn.addEventListener("click", async (e) => {
-//   e.preventDefault();
-
-//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-//   const price = document.querySelector(".modal.add-product #gia-moi").value;
-//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-//   const categoryText = document.querySelector(
-//     ".modal.add-product #chon-mon"
-//   ).value;
-//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
-
-//   if (!tenMon || !price || !categoryText) {
-//     toast({
-//       title: "Chú ý",
-//       message: "Vui lòng nhập tên món, giá và chọn loại món!",
-//       type: "warning",
-//     });
-//     return;
-//   }
-//   if (isNaN(parseFloat(price))) {
-//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-//     return;
-//   }
-
-//   const formData = new FormData();
-//   formData.append("title", tenMon);
-//   formData.append("price", parseFloat(price));
-//   formData.append("description", moTa);
-//   formData.append("category", categoryText);
-//   formData.append("status", "1");
-
-//   if (fileInput.files.length > 0) {
-//     formData.append("imageFile", fileInput.files[0]);
-//   }
-
-//   if (uploadedFile) {
-//     formData.append("imageFile", uploadedFile);
-//   }
-
-//   try {
-//     await ApiService.createProduct(formData);
-//     toast({
-//       title: "Success",
-//       message: "Thêm sản phẩm thành công!",
-//       type: "success",
-//     });
-//     setDefaultProductFormValue();
-//     document.querySelector(".modal.add-product").classList.remove("open");
-//     adminCurrentPage = 1;
-//     await showProduct();
-//   } catch (error) {
-//     console.error("Error adding product:", error);
-//     toast({
-//       title: "Lỗi",
-//       message: error.data?.message || "Thêm sản phẩm thất bại.",
-//       type: "error",
-//     });
-//   }
-// });
-
-// btnAddProductIn.addEventListener("click", async (e) => {
-//   e.preventDefault();
-
-//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-//   const price = document.querySelector(".modal.add-product #gia-moi").value;
-//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-//   const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
-//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
-
-//   if (!tenMon || !price || !categoryText) {
-//     toast({
-//       title: "Chú ý",
-//       message: "Vui lòng nhập tên món, giá và chọn loại món!",
-//       type: "warning",
-//     });
-//     return;
-//   }
-//   if (isNaN(parseFloat(price))) {
-//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-//     return;
-//   }
-
-//   const formData = new FormData();
-//   formData.append("title", tenMon);
-//   formData.append("price", parseFloat(price));
-//   formData.append("description", moTa);
-//   formData.append("category", categoryText);
-//   formData.append("status", "1");
-
-//   // Use uploadedFile if available, otherwise use fileInput
-//   // if (uploadedFile) {
-//   //   formData.append("imageFile", uploadedFile);
-//   // } else if (fileInput.files.length > 0) {
-//   //   formData.append("imageFile", fileInput.files[0]);
-//   // }
-
-//   if (fileInput.files.length > 0) {
-//     formData.append("imageFile", fileInput.files[0]);
-//   }
-
-//   try {
-//     await ApiService.createProduct(formData);
-//     toast({
-//       title: "Success",
-//       message: "Thêm sản phẩm thành công!",
-//       type: "success",
-//     });
-//     setDefaultProductFormValue();
-//     document.querySelector(".modal.add-product").classList.remove("open");
-//     adminCurrentPage = 1;
-//     await showProduct();
-//   } catch (error) {
-//     console.error("Error adding product:", error);
-//     toast({
-//       title: "Lỗi",
-//       message: error.data?.message || "Thêm sản phẩm thất bại.",
-//       type: "error",
-//     });
-//   }
-// });
-
-// btnAddProductIn.addEventListener("click", async (e) => {
-//   e.preventDefault();
-
-//   const tenMon = document.querySelector(".modal.add-product #ten-mon").value;
-//   const price = document.querySelector(".modal.add-product #gia-moi").value;
-//   const moTa = document.querySelector(".modal.add-product #mo-ta").value;
-//   const categoryText = document.querySelector(".modal.add-product #chon-mon").value;
-//   const fileInput = document.querySelector(".modal.add-product #up-hinh-anh");
-
-//   if (!tenMon || !price || !categoryText) {
-//     toast({
-//       title: "Chú ý",
-//       message: "Vui lòng nhập tên món, giá và chọn loại món!",
-//       type: "warning",
-//     });
-//     return;
-//   }
-//   if (isNaN(parseFloat(price))) {
-//     toast({ title: "Chú ý", message: "Giá phải là số!", type: "warning" });
-//     return;
-//   }
-
-//   if (fileInput.files.length > 0) {
-//     const file = fileInput.files[0];
-//     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-//     if (!allowedTypes.includes(file.type)) {
-//       toast({
-//         title: "Chú ý",
-//         message: "Chỉ chấp nhận file ảnh JPEG hoặc PNG!",
-//         type: "warning",
-//       });
-//       return;
-//     }
-//     if (file.size > 5 * 1024 * 1024) {
-//       toast({
-//         title: "Chú ý",
-//         message: "Kích thước file ảnh không được vượt quá 5MB!",
-//         type: "warning",
-//       });
-//       return;
-//     }
-//   }
-
-//   const formData = new FormData();
-//   formData.append("title", tenMon);
-//   formData.append("price", parseFloat(price));
-//   formData.append("description", moTa);
-//   formData.append("category", categoryText);
-//   formData.append("status", "1");
-
-//   if (fileInput.files.length > 0) {
-//     formData.append("imageFile", fileInput.files[0]);
-//   }
-
-//   console.log('FormData contents:');
-//   for (let [key, value] of formData.entries()) {
-//     console.log(key, value);
-//   }
-  
-//   try {
-//     await ApiService.createProduct(formData);
-//     toast({
-//       title: "Success",
-//       message: "Thêm sản phẩm thành công!",
-//       type: "success",
-//     });
-//     setDefaultProductFormValue();
-//     document.querySelector(".modal.add-product").classList.remove("open");
-//     adminCurrentPage = 1;
-//     await showProduct();
-//   } catch (error) {
-//     console.error("Error adding product:", error);
-//     toast({
-//       title: "Lỗi",
-//       message: error.data?.message || "Thêm sản phẩm thất bại.",
-//       type: "error",
-//     });
-//   }
-// });
-
 btnAddProductIn.addEventListener("click", async (e) => {
   e.preventDefault();
 
@@ -1233,36 +959,6 @@ function updateThongKeOverview(reportData) {
   document.getElementById("quantity-order").innerText = totalQuantity;
   document.getElementById("quantity-sale").innerText = vnd(totalRevenue);
 }
-
-// function showThongKeTable(reportData) {
-//     let orderHtml = "";
-//     const showTkElement = document.getElementById("showTk");
-//     if (!showTkElement) return;
-
-//     if (!reportData || reportData.length === 0) {
-//         orderHtml = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu thống kê.</td></tr>`;
-//     } else {
-//         reportData.forEach((item, index) => {
-//             orderHtml += `
-//             <tr>
-//             <td>${index + 1}</td>
-//             <td><div class="prod-img-title"><img class="prd-img-tbl" src="${item.product_img_url || './assets/img/blank-image.png'}" alt="${item.product_title}"><p>${item.product_title}</p></div></td>
-//             <td>${item.total_quantity_sold}</td>
-//             <td>${vnd(item.total_revenue_from_product)}</td>
-//             <td><button class="btn-detail product-order-detail" data-product-id="${item.product_id}"><i class="fa-regular fa-eye"></i> Chi tiết đơn</button></td>
-//             </tr>
-//             `;
-//         });
-//     }
-//     showTkElement.innerHTML = orderHtml;
-
-//     document.querySelectorAll(".product-order-detail").forEach(btn => {
-//         btn.onclick = () => {
-//             const prodId = btn.dataset.productId;
-//             toast({title: "Thông tin", message: `Chi tiết đơn hàng cho sản phẩm ID ${prodId} (chức năng này cần API riêng).`, type: "info"})
-//         };
-//     });
-// }
 
 function showThongKeTable(reportData) {
   let orderHtml = "";

@@ -13,14 +13,12 @@ const Cart = {
   },
 
   async addOrUpdateItem(item) {
-    // Check if item already exists
     const [existing] = await pool.query(
       'SELECT * FROM cart WHERE user_id = ? AND product_id = ? AND note = ?',
       [item.user_id, item.product_id, item.note]
     );
 
     if (existing.length > 0) {
-      // Update quantity
       const newQuantity = existing[0].quantity + item.quantity;
       await pool.query(
         'UPDATE cart SET quantity = ? WHERE id = ?',
@@ -28,7 +26,6 @@ const Cart = {
       );
       return { ...existing[0], quantity: newQuantity };
     } else {
-      // Insert new item
       const [result] = await pool.query(
         'INSERT INTO cart SET ?',
         item

@@ -2,24 +2,6 @@ const Product = require('../models/productModel');
 const path = require('path');
 const fs = require('fs');
 
-// exports.createProduct = async (req, res) => {
-//   try {
-//     const { title, img_url, category, price, description, status = 1 } = req.body;
-//     if (!title || !category || price === undefined) {
-//         return res.status(400).json({ message: 'Tiêu đề, danh mục và giá là bắt buộc.' });
-//     }
-//     if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
-//         return res.status(400).json({ message: 'Giá không hợp lệ.'});
-//     }
-//     const productData = { title, img_url, category, price: parseFloat(price), description, status };
-//     const product = await Product.create(productData);
-//     res.status(201).json(product);
-//   } catch (error) {
-//     console.error('Lỗi tạo sản phẩm:', error);
-//     res.status(500).json({ message: 'Lỗi máy chủ khi tạo sản phẩm.', error: error.message });
-//   }
-// };
-
 exports.getAllProducts = async (req, res) => {
   try {
     const { category, search, minPrice, maxPrice, sortBy, page = 1, limit = 12 } = req.query;
@@ -37,7 +19,7 @@ exports.getAllProducts = async (req, res) => {
         offset
     };
     const { products, total } = await Product.findAll(filters);
-    console.log('Products found:', products.length, 'Total:', total); // Debug log
+    console.log('Products found:', products.length, 'Total:', total); 
     
     res.json({
         data: products,
@@ -98,28 +80,6 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// exports.updateProduct = async (req, res) => {
-//   try {
-//     const { title, img_url, category, price, description, status } = req.body;
-//     if (title === undefined && img_url === undefined && category === undefined && price === undefined && description === undefined && status === undefined) {
-//         return res.status(400).json({ message: 'Không có dữ liệu để cập nhật.' });
-//     }
-//     if (price !== undefined && (isNaN(parseFloat(price)) || parseFloat(price) < 0)) {
-//         return res.status(400).json({ message: 'Giá không hợp lệ.'});
-//     }
-//     const productData = { title, img_url, category, price: price !== undefined ? parseFloat(price) : undefined, description, status };
-
-//     const updated = await Product.update(req.params.id, productData);
-//     if (!updated) {
-//       return res.status(404).json({ message: 'Sản phẩm không tìm thấy hoặc không có thay đổi nào được thực hiện.' });
-//     }
-//     res.json({ message: 'Sản phẩm được cập nhật thành công.' });
-//   } catch (error) {
-//     console.error('Lỗi cập nhật sản phẩm:', error);
-//     res.status(500).json({ message: 'Lỗi máy chủ khi cập nhật sản phẩm.', error: error.message });
-//   }
-// };
-
 exports.updateProductStatus = async (req, res) => {
     try {
         const { status } = req.body;
@@ -137,11 +97,10 @@ exports.updateProductStatus = async (req, res) => {
     }
 };
 
-// Add this helper function
 const saveProductImage = (file, productId) => {
   if (!file) return null;
-  
-  const uploadDir = path.join(__dirname, '../../frontend/assets/img/products');
+
+  const uploadDir = path.join(__dirname, '../public/uploads');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -150,64 +109,30 @@ const saveProductImage = (file, productId) => {
   const filename = `product_${productId}${ext}`;
   const filePath = path.join(uploadDir, filename);
 
-  fs.writeFileSync(filePath, file.buffer);
-  return `/assets/img/products/${filename}`;
+  try {
+    fs.writeFileSync(filePath, file.buffer);
+    return `/uploads/${filename}`;
+  } catch (error) {
+    console.error('Error saving product image:', error);
+    return null;
+  }
 };
-
-// Modify createProduct
-// exports.createProduct = async (req, res) => {
-//   try {
-//     const { title, category, price, description, status = 1 } = req.body;
-//     const imageFile = req.files?.imageFile;
-
-//     if (!title || !category || price === undefined) {
-//       return res.status(400).json({ message: 'Tiêu đề, danh mục và giá là bắt buộc.' });
-//     }
-
-//     // First create product to get ID
-//     const productData = { 
-//       title, 
-//       img_url: '', // Temporary empty
-//       category, 
-//       price: parseFloat(price), 
-//       description, 
-//       status 
-//     };
-    
-//     const product = await Product.create(productData);
-    
-//     // Handle image upload
-//     // if (imageFile) {
-//     //   const img_url = saveProductImage(imageFile, product.id);
-//     //   await Product.update(product.id, { img_url });
-//     //   product.img_url = img_url;
-//     // }
-
-//     if (imageFile) {
-//       const img_url = saveProductImage(imageFile, product.id);
-//       const updated = await Product.update(product.id, { img_url });
-//       if (!updated) {
-//         throw new Error('Failed to update product image URL in database');
-//       }
-//       product.img_url = img_url;
-//     }
-
-//     res.status(201).json(product);
-//   } catch (error) {
-//     console.error('Lỗi tạo sản phẩm:', error);
-//     res.status(500).json({ message: 'Lỗi máy chủ khi tạo sản phẩm.', error: error.message });
-//   }
-// };
 
 exports.createProduct = async (req, res) => {
   try {
-    console.log('req.body:', req.body); // Debug log
-    console.log('req.files:', req.files); // Debug log
+    console.log('req.body:', req.body);
+    console.log('req.file:', req.file); 
     const { title, category, price, description, status = 1 } = req.body;
-    const imageFile = req.files?.imageFile;
+    const imageFile = req.file; 
 
     if (!title || !category || price === undefined) {
+      console.log('Validation failed: Missing required fields');
       return res.status(400).json({ message: 'Tiêu đề, danh mục và giá là bắt buộc.' });
+    }
+
+    if (isNaN(parseFloat(price)) || parseFloat(price) < 0) {
+      console.log('Validation failed: Invalid price');
+      return res.status(400).json({ message: 'Giá không hợp lệ.' });
     }
 
     const productData = { 
@@ -219,17 +144,26 @@ exports.createProduct = async (req, res) => {
       status 
     };
     
+    console.log('Creating product with data:', productData);
     const product = await Product.create(productData);
     
     if (imageFile) {
+      console.log('Processing image upload for product ID:', product.id);
       const img_url = saveProductImage(imageFile, product.id);
+      if (!img_url) {
+        console.error('Failed to save product image');
+        throw new Error('Failed to save product image');
+      }
+      console.log('Updating product with img_url:', img_url);
       const updated = await Product.update(product.id, { img_url });
       if (!updated) {
+        console.error('Failed to update product image URL in database');
         throw new Error('Failed to update product image URL in database');
       }
       product.img_url = img_url;
     }
 
+    console.log('Product created successfully:', product);
     res.status(201).json(product);
   } catch (error) {
     console.error('Lỗi tạo sản phẩm:', error);
@@ -237,24 +171,56 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// Modify updateProduct similarly
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, category, price, description, status } = req.body;
-    const imageFile = req.files?.imageFile;
+    const imageFile = req.file; // Use req.file
 
-    const productData = { title, category, price, description, status };
-    
-    if (imageFile) {
-      const img_url = saveProductImage(imageFile, id);
-      productData.img_url = img_url;
+    console.log('Updating product ID:', id);
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file ? { 
+      originalname: req.file.originalname, 
+      mimetype: req.file.mimetype, 
+      size: req.file.size 
+    } : 'No file uploaded');
+
+    if (!title && !category && !price && !description && status === undefined && !imageFile) {
+      console.log('Validation failed: No data to update');
+      return res.status(400).json({ message: 'Không có dữ liệu để cập nhật.' });
+    }
+    if (price !== undefined && (isNaN(parseFloat(price)) || parseFloat(price) < 0)) {
+      console.log('Validation failed: Invalid price');
+      return res.status(400).json({ message: 'Giá không hợp lệ.' });
     }
 
+    const productData = {
+      title,
+      category,
+      price: price !== undefined ? parseFloat(price) : undefined,
+      description,
+      status
+    };
+
+    if (imageFile) {
+      console.log('Processing image for product ID:', id);
+      const img_url = saveProductImage(imageFile, id);
+      if (!img_url) {
+        console.error('Failed to save product image');
+        throw new Error('Failed to save product image');
+      }
+      productData.img_url = img_url;
+      console.log('Updated img_url:', img_url);
+    }
+
+    console.log('Updating product with data:', productData);
     const updated = await Product.update(id, productData);
     if (!updated) {
+      console.log('Product not found or no changes made');
       return res.status(404).json({ message: 'Sản phẩm không tìm thấy.' });
     }
+
+    console.log('Product updated successfully');
     res.json({ message: 'Sản phẩm được cập nhật thành công.' });
   } catch (error) {
     console.error('Lỗi cập nhật sản phẩm:', error);
