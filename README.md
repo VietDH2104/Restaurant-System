@@ -1,4 +1,4 @@
-How to run our code.
+This is the set up tutorial to run our code.
 1. Set up the connection using MySQL WB using the existing .env file we provide
 - Set the matching fields with the connection requirements to establish the connection.
 - If tested successful, you are ready to move on to the next step.
