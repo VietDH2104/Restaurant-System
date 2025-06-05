@@ -23,55 +23,64 @@ async function generateOrderId() {
 }
 
 exports.createOrder = async (req, res) => {
-  try {
-    const {
-      customer_name, customer_phone, delivery_address,
-      delivery_type, delivery_date, delivery_time_slot, notes,
-      items
-    } = req.body;
+    try {
+        const {
+            customer_name, customer_phone, delivery_address,
+            delivery_type, delivery_date, delivery_time_slot, notes,
+            items, subtotal, shipping_fee, total
+        } = req.body;
 
-    if (!customer_name || !customer_phone || !delivery_address || !items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Thông tin đơn hàng hoặc sản phẩm không hợp lệ.' });
+        if (!customer_name || !customer_phone || !delivery_address || !items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ message: 'Thông tin đơn hàng hoặc sản phẩm không hợp lệ.' });
+        }
+
+        let calculated_total_amount = 0;
+        const orderItemsData = [];
+
+        for (const item of items) {
+            if (!item.product_id || !item.quantity || parseInt(item.quantity) <= 0) {
+                return res.status(400).json({ message: `Dữ liệu sản phẩm không hợp lệ cho product_id: ${item.product_id}` });
+            }
+            const product = await Product.findById(item.product_id);
+            if (!product || product.status !== 1) {
+                return res.status(400).json({ message: `Sản phẩm với ID ${item.product_id} không tìm thấy hoặc không có sẵn.` });
+            }
+            const price_at_purchase = parseFloat(product.price);
+            calculated_total_amount += price_at_purchase * parseInt(item.quantity);
+            orderItemsData.push({
+                product_id: item.product_id,
+                quantity: parseInt(item.quantity),
+                price_at_purchase,
+                item_notes: item.item_notes || null
+            });
+        }
+
+        // Validate frontend-provided subtotal and total
+        if (subtotal !== calculated_total_amount) {
+            return res.status(400).json({ message: 'Tổng tiền hàng không khớp với dữ liệu sản phẩm.' });
+        }
+        const finalTotal = total || (calculated_total_amount + (shipping_fee || 0));
+        if (finalTotal < calculated_total_amount) {
+            return res.status(400).json({ message: 'Tổng tiền đơn hàng không hợp lệ.' });
+        }
+
+        const orderId = await generateOrderId();
+
+        const orderData = {
+            id: orderId,
+            user_phone: req.user ? req.user.phone : null,
+            customer_name, customer_phone, delivery_address,
+            delivery_type, delivery_date, delivery_time_slot, notes,
+            total_amount: finalTotal,
+            status: 0
+        };
+
+        const newOrder = await Order.create(orderData, orderItemsData);
+        res.status(201).json({ orderId: orderId, ...newOrder });
+    } catch (error) {
+        console.error('Lỗi tạo đơn hàng:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ khi tạo đơn hàng.', error: error.message });
     }
-
-    let calculated_total_amount = 0;
-    const orderItemsData = [];
-
-    for (const item of items) {
-      if (!item.product_id || !item.quantity || parseInt(item.quantity) <= 0) {
-        return res.status(400).json({ message: `Dữ liệu sản phẩm không hợp lệ cho product_id: ${item.product_id}` });
-      }
-      const product = await Product.findById(item.product_id);
-      if (!product || product.status !== 1) {
-        return res.status(400).json({ message: `Sản phẩm với ID ${item.product_id} không tìm thấy hoặc không có sẵn.` });
-      }
-      const price_at_purchase = parseFloat(product.price);
-      calculated_total_amount += price_at_purchase * parseInt(item.quantity);
-      orderItemsData.push({
-        product_id: item.product_id,
-        quantity: parseInt(item.quantity),
-        price_at_purchase,
-        item_notes: item.item_notes || null
-      });
-    }
-
-    const orderId = await generateOrderId();
-
-    const orderData = {
-      id: orderId,
-      user_phone: req.user ? req.user.phone : null,
-      customer_name, customer_phone, delivery_address,
-      delivery_type, delivery_date, delivery_time_slot, notes,
-      total_amount: calculated_total_amount,
-      status: 0
-    };
-
-    const newOrder = await Order.create(orderData, orderItemsData);
-    res.status(201).json(newOrder);
-  } catch (error) {
-    console.error('Lỗi tạo đơn hàng:', error);
-    res.status(500).json({ message: 'Lỗi máy chủ khi tạo đơn hàng.', error: error.message });
-  }
 };
 
 exports.getMyOrders = async (req, res) => {
