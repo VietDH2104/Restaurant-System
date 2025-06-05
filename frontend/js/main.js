@@ -741,6 +741,7 @@ async function changePassword() {
 async function renderOrderProduct() {
     try {
         const orders = await ApiService.fetchMyOrders();
+        const backendBaseUrl = 'http://localhost:5000'; // Backend URL
         let orderHtml = "";
         if (!orders || orders.length === 0) {
             orderHtml = `<div class="empty-order-section"><img src="./assets/img/empty-order.jpg" alt="" class="empty-order-img"><p>Chưa có đơn hàng nào</p></div>`;
@@ -749,9 +750,14 @@ async function renderOrderProduct() {
                 let productHtml = `<div class="order-history-group">`;
                 if (item.items && item.items.length > 0) {
                     item.items.forEach(sp => {
+                        // Determine the correct image URL
+                        let imageUrl = sp.product_img_url || './assets/img/blank-image.png';
+                        if (sp.product_img_url && sp.product_img_url.startsWith('/uploads/')) {
+                            imageUrl = `${backendBaseUrl}${sp.product_img_url}`;
+                        }
                         productHtml += `<div class="order-history">
                             <div class="order-history-left">
-                                <img src="${sp.product_img_url || './assets/img/blank-image.png'}" alt="${sp.product_title}">
+                                <img src="${imageUrl}" alt="${sp.product_title}">
                                 <div class="order-history-info">
                                     <h4>${sp.product_title}</h4>
                                     <p class="order-history-note"><i class="fa-light fa-pen"></i> ${sp.item_notes || 'Không có ghi chú'}</p>
@@ -766,7 +772,7 @@ async function renderOrderProduct() {
                         </div>`;
                     });
                 } else {
-                     productHtml += `<p>Đơn hàng này không có chi tiết sản phẩm.</p>`;
+                    productHtml += `<p>Đơn hàng này không có chi tiết sản phẩm.</p>`;
                 }
 
                 let textCompl = item.status === 1 ? "Đã xử lý" : "Đang xử lý";
@@ -812,6 +818,7 @@ function formatDate(dateString) {
 async function detailOrder(orderId) {
     try {
         const detail = await ApiService.fetchOrderById(orderId);
+        const backendBaseUrl = 'http://localhost:5000'; // Backend URL
         if (!detail) {
             toast({ title: 'Error', message: 'Không tìm thấy đơn hàng.', type: 'error', duration: 3000 });
             return;
@@ -854,7 +861,7 @@ async function detailOrder(orderId) {
                 <span class="detail-order-item-left"><i class="fa-light fa-phone"></i> Số điện thoại nhận</span>
                 <span class="detail-order-item-right">${detail.customer_phone}</span>
             </li>
-             <li class="detail-order-item">
+            <li class="detail-order-item">
                 <span class="detail-order-item-left"><i class="fa-light fa-money-bill"></i> Tổng tiền</span>
                 <span class="detail-order-item-right">${vnd(detail.total_amount)}</span>
             </li>
@@ -862,7 +869,7 @@ async function detailOrder(orderId) {
                 <span class="detail-order-item-left"><i class="fa-light fa-circle-info"></i> Trạng thái</span>
                 <span class="detail-order-item-right ${detail.status === 1 ? 'status-complete' : 'status-no-complete'}">${detail.status === 1 ? 'Đã xử lý' : 'Đang xử lý'}</span>
             </li>
-             <li class="detail-order-item tb">
+            <li class="detail-order-item tb">
                 <span class="detail-order-item-t"><i class="fa-light fa-note-sticky"></i> Ghi chú đơn hàng</span>
                 <p class="detail-order-item-b">${detail.notes || 'Không có ghi chú'}</p>
             </li>
@@ -871,8 +878,13 @@ async function detailOrder(orderId) {
         if (detail.items && detail.items.length > 0) {
             detailOrderHtml += `<h4>Chi tiết sản phẩm:</h4><ul class="detail-order-items-list">`;
             detail.items.forEach(pItem => {
+                // Determine the correct image URL
+                let imageUrl = pItem.product_img_url || './assets/img/blank-image.png';
+                if (pItem.product_img_url && pItem.product_img_url.startsWith('/uploads/')) {
+                    imageUrl = `${backendBaseUrl}${pItem.product_img_url}`;
+                }
                 detailOrderHtml += `<li class="detail-order-product-item">
-                    <img src="${pItem.product_img_url || './assets/img/blank-image.png'}" alt="${pItem.product_title}" class="detail-order-product-image">
+                    <img src="${imageUrl}" alt="${pItem.product_title}" class="detail-order-product-image">
                     <div class="detail-order-product-info">
                         <p><strong>${pItem.product_title}</strong></p>
                         <p>Số lượng: ${pItem.quantity}</p>

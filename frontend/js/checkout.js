@@ -307,7 +307,7 @@ function closecheckout() {
 }
 
 // Thong tin cac don hang da mua - Xu ly khi nhan nut dat hang
-async function xulyDathang(itemsToOrder, subtotal) {
+async function xulyDathang(itemsToOrder, subtotal, option) {
     let diachinhan = "";
     let hinhthucgiao = "";
     let thoigiangiao = "";
@@ -315,7 +315,7 @@ async function xulyDathang(itemsToOrder, subtotal) {
     let currentUser = ApiService.getCurrentUser();
 
     if (!currentUser) {
-        toast({ title: 'Lỗi', message: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', type: 'error' });
+        toast({ title: 'Error', message: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', type: 'error' });
         return;
     }
 
@@ -390,38 +390,38 @@ async function xulyDathang(itemsToOrder, subtotal) {
         delivery_type: hinhthucgiao,
         delivery_date: deliveryDate,
         delivery_time_slot: giaotannoiRadio.classList.contains("active") ? (giaongayCheckbox.checked ? "Giao ngay" : thoigiangiao) : null,
-        notes: document.querySelector(".note-order").value,
+        notes: document.querySelector(".note-order").value || "",
         items: itemsToOrder,
         subtotal: subtotal,
         shipping_fee: shippingFee,
         total: subtotal + shippingFee
     };
 
-    console.log("Order Payload:", orderPayload); // Debug
+    console.log("Order Payload:", orderPayload);
 
     try {
         const createdOrder = await ApiService.createOrder(orderPayload);
         toast({ title: 'Thành công', message: `Đặt hàng thành công! Mã đơn hàng: ${createdOrder.orderId}`, type: 'success', duration: 4000 });
 
-        if (currentUser && currentUser.id) {
+        // Clear cart only for cart-based orders (option === 1)
+        if (option === 1 && currentUser && currentUser.id) {
             localStorage.removeItem(`UserCart_${currentUser.id}`);
+            await ApiService.clearCart();
             if (typeof updateAmount === 'function') updateAmount();
         }
 
         setTimeout(() => {
             closecheckout();
-            if (typeof orderHistory === "function") {
+            if (typeof orderHistory === 'function') {
                 orderHistory();
             } else {
-                window.location.href = "/";
+                window.location.href = '/';
             }
         }, 2000);
     } catch (error) {
         console.error("Error creating order:", error);
-        toast({ title: 'Thất bại', message: error.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại.', type: 'error', duration: 4000 });
+        toast({ title: 'Error', message: error.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại.', type: 'error', duration: 4000 });
     }
-
-    await ApiService.clearCart();
 }
 
 // Assuming global functions from main.js are available:
