@@ -683,11 +683,17 @@ async function detailOrderAdmin(orderId) {
 
     if (order.items && order.items.length > 0) {
       order.items.forEach((item) => {
+        // Normalize image URL
+        let imgSrc = item.product_img_url || "./assets/img/blank-image.png";
+        if (imgSrc.startsWith('/uploads')) {
+          imgSrc = `http://localhost:5000${imgSrc}`;
+        } else if (imgSrc.startsWith('/assets')) {
+          imgSrc = `.${imgSrc}`;
+        }
+
         spHtml += `<div class="order-product">
                     <div class="order-product-left">
-                        <img src="${
-                          item.product_img_url || "./assets/img/blank-image.png"
-                        }" alt="${item.product_title}">
+                        <img src="${imgSrc}" alt="${item.product_title}">
                         <div class="order-product-info">
                             <h4>${item.product_title}</h4>
                             <p class="order-product-note"><i class="fa-light fa-pen"></i> ${
@@ -969,19 +975,21 @@ function showThongKeTable(reportData) {
     orderHtml = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu thống kê.</td></tr>`;
   } else {
     reportData.forEach((item, index) => {
+      // Normalize image URL
+      let imgSrc = item.product_img_url || "./assets/img/blank-image.png";
+      if (imgSrc.startsWith('/uploads')) {
+        imgSrc = `http://localhost:5000${imgSrc}`;
+      } else if (imgSrc.startsWith('/assets')) {
+        imgSrc = `.${imgSrc}`;
+      }
+
       orderHtml += `
             <tr>
             <td>${index + 1}</td>
-            <td><div class="prod-img-title"><img class="prd-img-tbl" src="${
-              item.product_img_url || "./assets/img/blank-image.png"
-            }" alt="${item.product_title}"><p>${
-        item.product_title
-      }</p></div></td>
+            <td><div class="prod-img-title"><img class="prd-img-tbl" src="${imgSrc}" alt="${item.product_title}"><p>${item.product_title}</p></div></td>
             <td>${item.total_quantity_sold}</td>
             <td>${vnd(item.total_revenue_from_product)}</td>
-            <td><button class="btn-detail product-order-detail" data-product-id="${
-              item.product_id
-            }"><i class="fa-regular fa-eye"></i> Chi tiết đơn</button></td>
+            <td><button class="btn-detail product-order-detail" data-product-id="${item.product_id}"><i class="fa-regular fa-eye"></i> Chi tiết đơn</button></td>
             </tr>
             `;
     });
@@ -996,11 +1004,9 @@ function showThongKeTable(reportData) {
       if (!detailModal || !tableBody) return;
 
       try {
-        // Fetch filters from statistics section
         const filters = {
           dateStart: document.getElementById("time-start-tk").value,
           dateEnd: document.getElementById("time-end-tk").value,
-          // status: document.getElementById("tinh-trang")?.value || undefined
           status: 1,
         };
         const orders = await ApiService.fetchOrdersByProductId(prodId, filters);
