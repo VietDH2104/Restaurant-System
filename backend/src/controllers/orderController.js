@@ -83,20 +83,66 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+// exports.getMyOrders = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user.phone) {
+//         return res.status(401).json({ message: 'Người dùng chưa được xác thực.' });
+//     }
+//     const ordersFromDb = await Order.findByUserPhone(req.user.phone);
+//     const ordersWithItems = await Promise.all(ordersFromDb.map(async (order) => {
+//         const orderDetails = await Order.findById(order.id);
+//         return orderDetails;
+//     }));
+//     res.json(ordersWithItems);
+//   } catch (error) {
+//     console.error('Lỗi lấy đơn hàng của tôi:', error);
+//     res.status(500).json({ message: 'Lỗi máy chủ khi lấy đơn hàng.', error: error.message });
+//   }
+// };
+
 exports.getMyOrders = async (req, res) => {
   try {
+    // Check if user is authenticated and has a phone number
     if (!req.user || !req.user.phone) {
-        return res.status(401).json({ message: 'Người dùng chưa được xác thực.' });
+      return res.status(401).json({ message: 'Người dùng chưa được xác thực hoặc thiếu thông tin số điện thoại.' });
     }
+
+    // Fetch orders for the authenticated user
     const ordersFromDb = await Order.findByUserPhone(req.user.phone);
-    const ordersWithItems = await Promise.all(ordersFromDb.map(async (order) => {
-        const orderDetails = await Order.findById(order.id);
-        return orderDetails;
-    }));
-    res.json(ordersWithItems);
+    
+    // If no orders found, return an empty array
+    if (!ordersFromDb || ordersFromDb.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // Fetch detailed order information including items
+    const ordersWithItems = await Promise.all(
+      ordersFromDb.map(async (order) => {
+        try {
+          const orderDetails = await Order.findById(order.id);
+          if (!orderDetails) {
+            console.warn(`Order with ID ${order.id} not found during detailed fetch.`);
+            return null; // Skip invalid orders
+          }
+          return orderDetails;
+        } catch (err) {
+          console.error(`Error fetching details for order ${order.id}:`, err);
+          return null; // Skip orders that fail to fetch
+        }
+      })
+    );
+
+    // Filter out any null entries (failed fetches)
+    const validOrders = ordersWithItems.filter(order => order !== null);
+
+    // Return the valid orders
+    res.status(200).json(validOrders);
   } catch (error) {
     console.error('Lỗi lấy đơn hàng của tôi:', error);
-    res.status(500).json({ message: 'Lỗi máy chủ khi lấy đơn hàng.', error: error.message });
+    res.status(500).json({ 
+      message: 'Lỗi máy chủ khi lấy đơn hàng.', 
+      error: error.message || 'Unknown error' 
+    });
   }
 };
 

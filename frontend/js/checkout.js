@@ -307,33 +307,33 @@ function closecheckout() {
 }
 
 // Thong tin cac don hang da mua - Xu ly khi nhan nut dat hang
-async function xulyDathang(itemsToOrder, subtotal, option) {
+async function xulyDathang(itemsToCheckout, subtotal) {
     let diachinhan = "";
     let hinhthucgiao = "";
     let thoigiangiao = "";
     let shippingFee = 0;
-    let currentUser = ApiService.getCurrentUser();
+    const currentUser = await ApiService.getCurrentUser();
 
     if (!currentUser) {
         toast({ title: 'Error', message: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', type: 'error' });
         return;
     }
 
-    let giaotannoiRadio = document.querySelector("#giaotannoi");
-    let tudenlayRadio = document.querySelector("#tudenlay");
+    const giaotantoi = document.querySelector("#giaotannoi");
+    const tudenlay = document.querySelector("#tudenlay");
 
-    if (giaotannoiRadio.classList.contains("active")) {
+    if (giaotantoi.classList.contains("active")) {
         diachinhan = document.querySelector("#diachinhan").value;
-        hinhthucgiao = giaotannoiRadio.innerText.trim();
-        shippingFee = PHIVANCHUYEN; // Include shipping fee for delivery
+        hinhthucgiao = giaotantoi.innerText.trim();
+        shippingFee = PHIVANCHUYEN;
         if (!diachinhan) {
             toast({ title: 'Chú ý', message: 'Vui lòng nhập địa chỉ nhận hàng!', type: 'warning' });
             document.querySelector("#diachinhan").focus();
             return;
         }
-    } else if (tudenlayRadio.classList.contains("active")) {
-        let chinhanh1 = document.querySelector("#chinhanh-1");
-        let chinhanh2 = document.querySelector("#chinhanh-2");
+    } else if (tudenlay.classList.contains("active")) {
+        const chinhanh1 = document.querySelector("#chinhanh-1");
+        const chinhanh2 = document.querySelector("#chinhanh-2");
         if (chinhanh1.checked) {
             diachinhan = chinhanh1.nextElementSibling.innerText.trim();
         } else if (chinhanh2.checked) {
@@ -342,17 +342,17 @@ async function xulyDathang(itemsToOrder, subtotal, option) {
             toast({ title: 'Chú ý', message: 'Vui lòng chọn chi nhánh lấy hàng!', type: 'warning' });
             return;
         }
-        hinhthucgiao = tudenlayRadio.innerText.trim();
-        shippingFee = 0; // No shipping fee for pickup
+        hinhthucgiao = tudenlay.innerText.trim();
+        shippingFee = 0;
     } else {
         toast({ title: 'Chú ý', message: 'Vui lòng chọn hình thức giao nhận!', type: 'warning' });
         return;
     }
 
-    let giaongayCheckbox = document.querySelector("#giaongay");
-    let giaovaogioCheckbox = document.querySelector("#deliverytime");
+    const giaongayCheckbox = document.querySelector("#giaongay");
+    const giaovaogioCheckbox = document.querySelector("#deliverytime");
 
-    if (giaotannoiRadio.classList.contains("active")) {
+    if (giaotantoi.classList.contains("active")) {
         if (giaongayCheckbox.checked) {
             thoigiangiao = "Giao ngay khi xong";
         } else if (giaovaogioCheckbox.checked) {
@@ -363,8 +363,8 @@ async function xulyDathang(itemsToOrder, subtotal, option) {
         }
     }
 
-    let tennguoinhan = document.querySelector("#tennguoinhan").value;
-    let sdtnhan = document.querySelector("#sdtnhan").value;
+    const tennguoinhan = document.querySelector("#tennguoinhan").value;
+    const sdtnhan = document.querySelector("#sdtnhan").value;
 
     if (!tennguoinhan || !sdtnhan) {
         toast({ title: 'Chú ý', message: 'Vui lòng nhập đầy đủ thông tin người nhận!', type: 'warning' });
@@ -383,15 +383,15 @@ async function xulyDathang(itemsToOrder, subtotal, option) {
     }
     const deliveryDate = activeDateElement.getAttribute("data-date");
 
-    let orderPayload = {
+    const orderPayload = {
         customer_name: tennguoinhan,
         customer_phone: sdtnhan,
         delivery_address: diachinhan,
         delivery_type: hinhthucgiao,
         delivery_date: deliveryDate,
-        delivery_time_slot: giaotannoiRadio.classList.contains("active") ? (giaongayCheckbox.checked ? "Giao ngay" : thoigiangiao) : null,
+        delivery_time_slot: giaotantoi.classList.contains("active") ? (giaongayCheckbox.checked ? "Giao ngay" : thoigiangiao) : null,
         notes: document.querySelector(".note-order").value || "",
-        items: itemsToOrder,
+        items: itemsToCheckout,
         subtotal: subtotal,
         shipping_fee: shippingFee,
         total: subtotal + shippingFee
@@ -403,11 +403,25 @@ async function xulyDathang(itemsToOrder, subtotal, option) {
         const createdOrder = await ApiService.createOrder(orderPayload);
         toast({ title: 'Thành công', message: `Đặt hàng thành công! Mã đơn hàng: ${createdOrder.orderId}`, type: 'success', duration: 4000 });
 
-        // Clear cart only for cart-based orders (option === 1)
-        if (option === 1 && currentUser && currentUser.id) {
-            localStorage.removeItem(`UserCart_${currentUser.id}`);
+        // Clear server-side cart for cart-based orders
+        if (itemsToCheckout.length > 0 && currentUser && currentUser.id) {
             await ApiService.clearCart();
-            if (typeof updateAmount === 'function') updateAmount();
+            // Clear client-side cart
+            localStorage.removeItem(`UserCart_${currentUser.id}`);
+            // Reset cart UI
+            const cartList = document.querySelector('.cart-list');
+            if (cartList) cartList.innerHTML = '';
+            const cartCount = document.querySelector('.count-product-cart');
+            if (cartCount) cartCount.innerText = '0';
+            const cartTotal = document.querySelector('.cart-total-price .text-price');
+            if (cartTotal) cartTotal.innerText = '0đ';
+            const gioHangTrong = document.querySelector('.gio-hang-trong');
+            if (gioHangTrong) gioHangTrong.style.display = 'block';
+            const thanhToanBtn = document.querySelector('.thanh-toan');
+            if (thanhToanBtn) thanhToanBtn.classList.add('disabled');
+            // Update cart amount
+            if (typeof updateAmount === 'function') await updateAmount();
+            if (typeof renderCart === 'function') await renderCart();
         }
 
         setTimeout(() => {
