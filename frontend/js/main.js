@@ -70,7 +70,7 @@ async function detailProduct(productId) {
         }
 
         // Determine the correct image URL based on storage location
-        const backendBaseUrl = 'http://localhost:5000'; // Adjust based on your backend URL
+        const backendBaseUrl = 'https://restaurant-system-1e3p.onrender.com'; // Adjust based on your backend URL
         let imageUrl;
         if (infoProduct.img_url && infoProduct.img_url.startsWith('/uploads/')) {
             // Image is stored in backend /public/uploads
@@ -741,7 +741,7 @@ async function changePassword() {
 async function renderOrderProduct() {
     try {
         const orders = await ApiService.fetchMyOrders();
-        const backendBaseUrl = 'http://localhost:5000'; // Backend URL
+        const backendBaseUrl = 'https://restaurant-system-1e3p.onrender.com'; // Backend URL
         let orderHtml = "";
         if (!orders || orders.length === 0) {
             orderHtml = `<div class="empty-order-section"><img src="./assets/img/empty-order.jpg" alt="" class="empty-order-img"><p>Chưa có đơn hàng nào</p></div>`;
@@ -818,7 +818,7 @@ function formatDate(dateString) {
 async function detailOrder(orderId) {
     try {
         const detail = await ApiService.fetchOrderById(orderId);
-        const backendBaseUrl = 'http://localhost:5000'; // Backend URL
+        const backendBaseUrl = 'https://restaurant-system-1e3p.onrender.com'; // Backend URL
         if (!detail) {
             toast({ title: 'Error', message: 'Không tìm thấy đơn hàng.', type: 'error', duration: 3000 });
             return;
@@ -935,7 +935,7 @@ async function renderProducts(showProduct) {
     showProduct.forEach((product) => {
       let imgSrc = product.img_url || './assets/img/blank-image.png';
       if (imgSrc.startsWith('/uploads')) {
-        imgSrc = `http://localhost:5000${imgSrc}`;
+        imgSrc = `https://restaurant-system-1e3p.onrender.com${imgSrc}`;
       }
       productHtml += `<div class="col-product">
         <article class="card-product">
